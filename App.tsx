@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Player, AIAnalysis } from './types';
 import { INITIAL_PLAYERS, calculateFantasyPoints } from './constants';
@@ -100,6 +101,13 @@ const App: React.FC = () => {
             return teams - pickInRound;
         }
     }, []);
+
+    // Bug Fix: Reset draft position if it becomes invalid after changing total teams.
+    useEffect(() => {
+        if (draftPosition > totalTeams) {
+            setDraftPosition(1);
+        }
+    }, [totalTeams, draftPosition]);
 
     useEffect(() => {
         const fetchProjectionsInBatches = async () => {
@@ -225,22 +233,26 @@ const App: React.FC = () => {
                     </div>
 
                     {/* Column 2: Available Players (Scrollable Center) */}
-                    <div className="lg:col-span-5">
-                        <h2 className="text-3xl font-bold mb-4 text-brand-text">Available Players</h2>
-                        <PositionFilter selectedPosition={selectedPosition} onSelectPosition={setSelectedPosition} />
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
-                            {availablePlayers.length > 0 ? availablePlayers.map(player => (
-                                <PlayerCard 
-                                    key={player.id} 
-                                    player={player} 
-                                    onDraft={handleDraftPlayer}
-                                    isRecommended={player.id === recommendedPlayer?.id}
-                                 />
-                            )) : (
-                                 <div className="col-span-full text-center py-16 bg-brand-secondary rounded-lg">
-                                    <p className="text-brand-subtle">No players available for position: {selectedPosition}</p>
-                                </div>
-                            )}
+                    <div className="lg:col-span-5 flex flex-col lg:h-[calc(100vh-6rem)]">
+                        <div className="flex-shrink-0">
+                            <h2 className="text-3xl font-bold mb-4 text-brand-text">Available Players</h2>
+                            <PositionFilter selectedPosition={selectedPosition} onSelectPosition={setSelectedPosition} />
+                        </div>
+                        <div className="flex-grow overflow-y-auto pr-2 -mr-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
+                                {availablePlayers.length > 0 ? availablePlayers.map(player => (
+                                    <PlayerCard 
+                                        key={player.id} 
+                                        player={player} 
+                                        onDraft={handleDraftPlayer}
+                                        isRecommended={player.id === recommendedPlayer?.id}
+                                     />
+                                )) : (
+                                     <div className="col-span-full text-center py-16 bg-brand-secondary rounded-lg">
+                                        <p className="text-brand-subtle">No players available for position: {selectedPosition}</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                     

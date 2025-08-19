@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import type { Player, Stats } from '../types';
 import { Position } from '../types';
@@ -98,14 +99,19 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, onDraft, isRecommended 
                         <PlayerStatsDisplay stats={player.stats2025Projected} position={player.position} />
                     </div>
                      <div>
-                         <button onClick={() => setShow2024Stats(!show2024Stats)} className="w-full text-left text-sm font-bold text-brand-subtle border-b border-brand-border pb-1 mb-2 flex justify-between items-center hover:text-brand-text transition-colors">
+                         <button 
+                            onClick={() => setShow2024Stats(!show2024Stats)} 
+                            className="w-full text-left text-sm font-bold text-brand-subtle border-b border-brand-border pb-1 mb-2 flex justify-between items-center hover:text-brand-text transition-colors"
+                            aria-expanded={show2024Stats}
+                            aria-controls={`player-stats-2024-${player.id}`}
+                          >
                             <span>2024 Performance</span>
                              <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 transition-transform duration-200 ${show2024Stats ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                             </svg>
                         </button>
                         {show2024Stats && (
-                            <div className="space-y-1 mt-2 animate-fade-in">
+                            <div id={`player-stats-2024-${player.id}`} className="space-y-1 mt-2 animate-fade-in">
                                 <StatDisplay label="Fantasy PPG" value={player.fantasyPointsPerGame2024?.toFixed(2)} />
                                 <StatDisplay label="Total Pts" value={player.fantasyPoints2024?.toFixed(2)} />
                                 <PlayerStatsDisplay stats={player.stats2024} position={player.position} />
