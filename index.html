@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fantasy Football AI Draft Picker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-primary': '#0d1117',
+              'brand-secondary': '#161b22',
+              'brand-accent': '#2f81f7',
+              'brand-text': '#c9d1d9',
+              'brand-subtle': '#8b949e',
+              'brand-border': '#30363d',
+            },
+            keyframes: {
+              'fade-in': {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              'glow': {
+                '0%, 100%': { 'box-shadow': '0 0 5px #10B981, 0 0 10px #10B981' },
+                '50%': { 'box-shadow': '0 0 20px #10B981, 0 0 30px #10B981' },
+              },
+              'pulse': {
+                '0%, 100%': { transform: 'scale(1)', opacity: '1' },
+                '50%': { transform: 'scale(1.02)', opacity: '0.95' },
+              }
+            },
+            animation: {
+              'fade-in': 'fade-in 0.3s ease-in-out',
+              'glow': 'glow 2s ease-in-out infinite',
+              'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            },
+          }
+        }
+      }
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.1.1/",
+    "react": "https://esm.sh/react@^19.1.1",
+    "react/": "https://esm.sh/react@^19.1.1/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.15.0"
+  }
+}
+</script>
+</head>
+  <body class="bg-brand-primary text-brand-text">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

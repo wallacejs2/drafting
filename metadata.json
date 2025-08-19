@@ -1,0 +1,5 @@
+{
+  "name": "Fantasy Football AI Draft Picker",
+  "description": "An AI-powered fantasy football draft assistant that calculates the next best player to draft based on your position, previous year's stats, and AI-generated projections for the upcoming season.",
+  "requestFramePermissions": []
+}
