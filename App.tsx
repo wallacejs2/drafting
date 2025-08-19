@@ -147,29 +147,36 @@ const App: React.FC = () => {
     }, []); // Runs once on mount
 
     useEffect(() => {
-        const allAvailablePlayers = players.filter(p => !p.drafted).sort((a, b) => (b.fantasyPointsPerGame2025Projected ?? 0) - (a.fantasyPointsPerGame2025Projected ?? 0));
-        
-        if (allAvailablePlayers.length > 0 && projectionsLoaded) {
-            setAiAnalysis(null);
+        setAiAnalysis(null); // Show loading state immediately for better UX.
+
+        const handler = setTimeout(() => {
+            const allAvailablePlayers = players.filter(p => !p.drafted).sort((a, b) => (b.fantasyPointsPerGame2025Projected ?? 0) - (a.fantasyPointsPerGame2025Projected ?? 0));
             
-            const myPicks = Array.from({ length: players.length }, (_, i) => i + 1)
-              .filter(pick => getTeamForPick(pick, totalTeams) === draftPosition);
-            
-            const myNextPick = myPicks.find(p => p > currentPick) || -1;
-            
-            const teamsPickingBeforeNext = [];
-            if (myNextPick !== -1) {
-                for (let i = currentPick + 1; i < myNextPick; i++) {
-                    teamsPickingBeforeNext.push(getTeamForPick(i, totalTeams));
+            if (allAvailablePlayers.length > 0 && projectionsLoaded) {
+                const myPicks = Array.from({ length: players.length }, (_, i) => i + 1)
+                .filter(pick => getTeamForPick(pick, totalTeams) === draftPosition);
+                
+                const myNextPick = myPicks.find(p => p > currentPick) || -1;
+                
+                const teamsPickingBeforeNext = [];
+                if (myNextPick !== -1) {
+                    for (let i = currentPick + 1; i < myNextPick; i++) {
+                        teamsPickingBeforeNext.push(getTeamForPick(i, totalTeams));
+                    }
                 }
+                
+                getDraftAnalysis(myTeamPlayers, allAvailablePlayers, draftedPlayers, currentPick, myNextPick, teamsPickingBeforeNext)
+                    .then(analysis => setAiAnalysis(analysis))
+                    .catch(err => {
+                        console.error("Error fetching AI analysis:", err);
+                        // The service now provides a fallback, so the UI won't crash.
+                    });
             }
-            
-            getDraftAnalysis(myTeamPlayers, allAvailablePlayers, draftedPlayers, currentPick, myNextPick, teamsPickingBeforeNext)
-                .then(analysis => setAiAnalysis(analysis))
-                .catch(err => {
-                    console.error("Error fetching AI analysis:", err);
-                });
-        }
+        }, 500); // Debounce API calls by 500ms
+
+        return () => {
+            clearTimeout(handler);
+        };
     }, [players, currentPick, draftPosition, totalTeams, getTeamForPick, myTeamPlayers, draftedPlayers, projectionsLoaded]);
 
     const handleDraftPlayer = (playerId: number) => {

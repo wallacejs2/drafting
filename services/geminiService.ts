@@ -172,21 +172,30 @@ export const getDraftAnalysis = async (
         const jsonString = response.text.trim();
         return JSON.parse(jsonString) as AIAnalysis;
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error fetching draft analysis:", error);
-        // Fallback in case of API error
+        
         const bestPlayer = availablePlayers[0];
+        let reasoning = `Unable to generate AI analysis. However, ${bestPlayer.name} is the best player available based on projections and would be a solid pick here.`;
+
+        // Provide a more specific error message for rate-limiting.
+        const errorString = String(error);
+        if (errorString.includes("429") || errorString.includes("RESOURCE_EXHAUSTED")) {
+            reasoning = "AI analysis is temporarily unavailable due to high traffic. Please try again shortly. We're still recommending the top projected player.";
+        }
+
         return {
             primary: {
                 name: bestPlayer.name,
-                reasoning: `Unable to generate AI analysis. However, ${bestPlayer.name} is the best player available based on projections and would be a solid pick here.`
+                reasoning: reasoning
             },
             alternatives: availablePlayers.slice(1, 3).map(p => ({
                 name: p.name,
                 reasoning: `A strong value pick based on projections.`
             })),
             predictions: [],
-            positionalAnalysis: { QB: 0, RB: 0, WR: 0, TE: 0 }
+            // Provide a neutral, non-zero fallback for positional analysis to keep the UI consistent.
+            positionalAnalysis: { QB: 25, RB: 35, WR: 30, TE: 10 }
         };
     }
 };
