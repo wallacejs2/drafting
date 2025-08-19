@@ -1,13 +1,13 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import type { Player, Stats, AIAnalysis } from '../types';
 
-const API_KEY = process.env.API_KEY;
-if (!API_KEY) {
-    throw new Error("API_KEY environment variable not set");
-}
+// Safely get the API key from environment variables.
+// This prevents a crash in browser environments where `process` is not defined,
+// allowing the application to load and function with fallback data.
+const API_KEY = (typeof process !== 'undefined' && process.env) ? process.env.API_KEY : undefined;
 
-const ai = new GoogleGenAI({ apiKey: API_KEY });
+// Initialize the AI service only if the API key is available.
+const ai = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
 
 const projectionSchema = {
     type: Type.OBJECT,
@@ -93,6 +93,13 @@ const analysisSchema = {
 
 
 export const getProjections = async (players: Player[]): Promise<Player[]> => {
+    if (!ai) {
+        console.error("Gemini AI service not initialized. Ensure API_KEY is configured.");
+        // The calling function in App.tsx has a try/catch, so this error
+        // will be handled gracefully, displaying a message to the user.
+        throw new Error("AI service not initialized. API_KEY may be missing.");
+    }
+    
     const playersForPrompt = players.map(({ id, name, position, team, stats2024, injuryRisk }) => ({
         id, name, position, team, stats2024, injuryRisk
     }));
@@ -141,27 +148,31 @@ export const getDraftAnalysis = async (
     myNextPick: number,
     teamsPickingBeforeNext: number[]
 ): Promise<AIAnalysis> => {
-    const prompt = `
-        You are an expert fantasy football draft analyst. It's my turn to pick at pick #${myCurrentPick}. My next pick is #${myNextPick}.
-
-        My Team So Far (${myRoster.length} players):
-        ${myRoster.length > 0 ? myRoster.map(p => `${p.name} (${p.position})`).join(', ') : 'No players drafted yet.'}
-
-        Top 15 Available Players (Name, Position, Injury Risk, 2025 Projected PPG):
-        ${availablePlayers.slice(0, 15).map(p => `${p.name} (${p.position}, ${p.injuryRisk} Risk, ${p.fantasyPointsPerGame2025Projected?.toFixed(1)})`).join('\n')}
-
-        Teams Picking Before My Next Turn: Teams ${teamsPickingBeforeNext.join(', ')}.
-
-        Your task is to provide expert draft advice in a JSON format.
-        1.  **Primary Recommendation**: Analyze my roster needs, the top available talent based on Projected PPG, and their injury risk. Recommend the single best player for me to draft right now. Provide a compelling, 2-sentence reason focusing on value, strategy, and risk assessment.
-        2.  **Alternative Picks**: Suggest two other strong options. For each, provide a brief, 1-sentence reason, factoring in their potential upside and risk.
-        3.  **Predictions**: Based on standard draft strategy and team needs, predict three players from the available list who are most likely to be drafted by the other teams before my next pick at #${myNextPick}. List their names only.
-        4.  **Positional Analysis**: Based on my roster, remaining talent (value over replacement), and draft trends, provide a percentage breakdown of which offensive skill position (QB, RB, WR, TE) I should target with this pick. The percentages should sum to 100.
-
-        Adhere strictly to the JSON schema provided.
-    `;
-
     try {
+        if (!ai) {
+            throw new Error("AI service not initialized. API_KEY may be missing.");
+        }
+        
+        const prompt = `
+            You are an expert fantasy football draft analyst. It's my turn to pick at pick #${myCurrentPick}. My next pick is #${myNextPick}.
+
+            My Team So Far (${myRoster.length} players):
+            ${myRoster.length > 0 ? myRoster.map(p => `${p.name} (${p.position})`).join(', ') : 'No players drafted yet.'}
+
+            Top 15 Available Players (Name, Position, Injury Risk, 2025 Projected PPG):
+            ${availablePlayers.slice(0, 15).map(p => `${p.name} (${p.position}, ${p.injuryRisk} Risk, ${p.fantasyPointsPerGame2025Projected?.toFixed(1)})`).join('\n')}
+
+            Teams Picking Before My Next Turn: Teams ${teamsPickingBeforeNext.join(', ')}.
+
+            Your task is to provide expert draft advice in a JSON format.
+            1.  **Primary Recommendation**: Analyze my roster needs, the top available talent based on Projected PPG, and their injury risk. Recommend the single best player for me to draft right now. Provide a compelling, 2-sentence reason focusing on value, strategy, and risk assessment.
+            2.  **Alternative Picks**: Suggest two other strong options. For each, provide a brief, 1-sentence reason, factoring in their potential upside and risk.
+            3.  **Predictions**: Based on standard draft strategy and team needs, predict three players from the available list who are most likely to be drafted by the other teams before my next pick at #${myNextPick}. List their names only.
+            4.  **Positional Analysis**: Based on my roster, remaining talent (value over replacement), and draft trends, provide a percentage breakdown of which offensive skill position (QB, RB, WR, TE) I should target with this pick. The percentages should sum to 100.
+
+            Adhere strictly to the JSON schema provided.
+        `;
+        
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
             contents: prompt,
@@ -179,11 +190,13 @@ export const getDraftAnalysis = async (
         const bestPlayer = availablePlayers[0];
         let reasoning = `Unable to generate AI analysis. However, ${bestPlayer.name} is the best player available based on projections and would be a solid pick here.`;
 
-        // Provide a more specific error message for rate-limiting.
-        const errorString = String(error);
+        const errorString = String(error?.message || error);
         if (errorString.includes("429") || errorString.includes("RESOURCE_EXHAUSTED")) {
             reasoning = "AI analysis is temporarily unavailable due to high traffic. Please try again shortly. We're still recommending the top projected player.";
+        } else if (errorString.includes("API_KEY")) {
+             reasoning = "AI analysis is unavailable because the API key is not configured. The recommendation is based on pre-calculated projections."
         }
+
 
         return {
             primary: {
@@ -195,7 +208,6 @@ export const getDraftAnalysis = async (
                 reasoning: `A strong value pick based on projections.`
             })),
             predictions: [],
-            // Provide a neutral, non-zero fallback for positional analysis to keep the UI consistent.
             positionalAnalysis: { QB: 25, RB: 35, WR: 30, TE: 10 }
         };
     }
