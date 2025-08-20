@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Position } from '../types';
 
@@ -15,6 +16,7 @@ const PositionFilter: React.FC<PositionFilterProps> = ({ selectedPosition, onSel
                 <button
                     key={position}
                     onClick={() => onSelectPosition(position)}
+                    aria-pressed={selectedPosition === position}
                     className={`flex-grow px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold rounded-lg transition-all duration-300 transform
                         ${
                             selectedPosition === position

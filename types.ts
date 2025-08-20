@@ -38,6 +38,7 @@ export interface Player {
     position: Position;
     team: string;
     injuryRisk: 'Low' | 'Medium' | 'High';
+    adp?: number;
     stats2024: Stats;
     gamesPlayed2024: number;
     stats2025Projected?: Stats;
@@ -61,4 +62,31 @@ export interface AIAnalysis {
   alternatives: AIRecommendation[];
   predictions: string[];
   positionalAnalysis: Record<string, number>;
+}
+
+export interface PositionalAdvantage {
+  position: Position | string;
+  yourPPG: number;
+  leagueAveragePPG: number;
+  rank: number;
+}
+
+export interface TeamAnalysis {
+  grade: string;
+  title: string;
+  summary: string;
+  insights: string[];
+}
+
+export interface AnalyticsData {
+  teamAnalysis: TeamAnalysis;
+  positionalAdvantages: PositionalAdvantage[];
+}
+
+export interface PlayerOutlook {
+  summary: string;
+  upside: string;
+  downside: string;
+  verdict: string;
+  riskRewardScore: number;
 }

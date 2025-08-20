@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import type { Player, AIAnalysis } from '../types';
 
@@ -55,19 +54,14 @@ const DraftAssistant: React.FC<DraftAssistantProps> = ({
     return (
         <div className="sticky top-6">
             <div className="bg-brand-secondary border border-brand-border rounded-lg mb-6">
-                 <button 
-                    onClick={() => setSettingsOpen(!settingsOpen)} 
-                    className="w-full text-left text-lg font-bold text-brand-text p-4 flex justify-between items-center hover:bg-brand-border/50 transition-colors"
-                    aria-expanded={settingsOpen}
-                    aria-controls="draft-settings-panel"
-                >
+                 <button onClick={() => setSettingsOpen(!settingsOpen)} className="w-full text-left text-lg font-bold text-brand-text p-4 flex justify-between items-center hover:bg-brand-border/50 transition-colors">
                     <span>Draft Settings</span>
                     <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 transition-transform duration-300 ${settingsOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                 </button>
                 {settingsOpen && (
-                    <div id="draft-settings-panel" className="p-4 border-t border-brand-border animate-fade-in">
+                    <div className="p-4 border-t border-brand-border animate-fade-in">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label htmlFor="total-teams" className="block text-sm font-medium text-brand-subtle">Teams</label>

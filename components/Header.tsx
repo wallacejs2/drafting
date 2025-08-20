@@ -6,9 +6,12 @@ interface HeaderProps {
     teamOnTheClock: number;
     isMyTurn: boolean;
     projectionStatus: string | null;
+    onAnalyze: () => void;
+    isAnalyzing: boolean;
+    canAnalyze: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ currentPick, totalTeams, teamOnTheClock, isMyTurn, projectionStatus }) => {
+const Header: React.FC<HeaderProps> = ({ currentPick, totalTeams, teamOnTheClock, isMyTurn, projectionStatus, onAnalyze, isAnalyzing, canAnalyze }) => {
     
     const round = Math.floor((currentPick - 1) / totalTeams) + 1;
     const pickInRound = ((currentPick - 1) % totalTeams) + 1;
@@ -22,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({ currentPick, totalTeams, teamOnTheClock
                     </svg>
                     <h1 className="text-xl md:text-2xl font-bold text-brand-text">AI Draft Assistant</h1>
                 </div>
-                 <div className="text-center">
+                 <div className="text-center" aria-live="polite" aria-atomic="true">
                     <p className="text-sm font-bold text-brand-text">
                         Pick {currentPick} <span className="text-brand-subtle">(R{round}.P{pickInRound})</span>
                     </p>
@@ -31,6 +34,26 @@ const Header: React.FC<HeaderProps> = ({ currentPick, totalTeams, teamOnTheClock
                     ) : (
                          <p className="text-sm font-semibold text-brand-subtle">Team {teamOnTheClock} is picking</p>
                     )}
+                </div>
+                 <div>
+                    <button
+                        onClick={onAnalyze}
+                        disabled={!canAnalyze || isAnalyzing}
+                        className="bg-green-600 text-white font-bold py-2 px-4 rounded-md hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 transition-all duration-200 disabled:bg-gray-500 disabled:cursor-not-allowed flex items-center text-sm"
+                    >
+                        {isAnalyzing ? (
+                             <svg className="animate-spin -ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        ) : (
+                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
+                                <path d="M12 2.252A8.014 8.014 0 0117.748 12H12V2.252z" />
+                            </svg>
+                        )}
+                        <span>{isAnalyzing ? 'Analyzing...' : 'Analyze Team'}</span>
+                    </button>
                 </div>
             </div>
              {projectionStatus && (
