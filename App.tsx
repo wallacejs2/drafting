@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Player, AIAnalysis, AnalyticsData, PositionalAdvantage, PlayerOutlook } from './types';
 import { INITIAL_PLAYERS, calculateFantasyPoints } from './constants';
-import { getProjections, getDraftAnalysis, getTeamAnalysis, getPlayerOutlook } from './services/geminiService';
+import { getDraftAnalysis, getTeamAnalysis, getPlayerOutlook } from './services/geminiService';
 import Header from './components/Header';
 import PlayerCard from './components/PlayerCard';
 import DraftAssistant from './components/DraftAssistant';
@@ -16,9 +16,8 @@ import PlayerSearch from './components/PlayerSearch';
 
 /**
  * Processes a player object to calculate fantasy points for 2024 and 2025.
- * If AI-powered 2025 stats are available, it uses them. Otherwise, it generates
- * a reasonable fallback projection based on 2024 performance and injury risk.
- * This ensures every player has a projection score at all times.
+ * It generates a reasonable fallback projection based on 2024 performance and injury risk.
+ * This ensures every player has a projection score at all times without AI.
  * @param p The player object.
  * @returns A new player object with all fantasy points calculated.
  */
@@ -30,7 +29,7 @@ const processPlayerWithStats = (p: Player): Player => {
     let gamesPlayed2025Projected: number;
     let fantasyPointsPerGame2025Projected: number;
 
-    // Use AI-projected stats if they exist
+    // Use pre-defined projected stats if they exist
     if (p.stats2025Projected && p.gamesPlayed2025Projected != null) {
         gamesPlayed2025Projected = p.gamesPlayed2025Projected;
         fantasyPoints2025Projected = calculateFantasyPoints(p.stats2025Projected, p.position, gamesPlayed2025Projected);
@@ -42,9 +41,11 @@ const processPlayerWithStats = (p: Player): Player => {
         
         gamesPlayed2025Projected = fallbackProjectedGames;
         
-        const gamesPlayedFactor = p.gamesPlayed2024 > 0 ? p.gamesPlayed2024 : 17;
-        // For rookies or players with 0 points, provide a sane baseline to avoid a 0 projection
         let basePoints = fantasyPoints2024;
+        let gamesPlayedFactor = p.gamesPlayed2024 > 0 ? p.gamesPlayed2024 : 17;
+
+        // If we have to generate a baseline score (e.g., for rookies or injured players with 0 points),
+        // assume it's a full-season baseline to avoid inflating projections for players who played very few games.
         if (basePoints <= 0) {
             switch(p.position) {
                 case Position.QB: basePoints = 250; break;
@@ -53,7 +54,9 @@ const processPlayerWithStats = (p: Player): Player => {
                 case Position.TE: basePoints = 100; break;
                 default: basePoints = 50;
             }
+            gamesPlayedFactor = 17; // This is the key fix
         }
+
         fantasyPoints2025Projected = (basePoints / gamesPlayedFactor) * gamesPlayed2025Projected * 0.95;
     }
 
@@ -74,7 +77,6 @@ const App: React.FC = () => {
     const [players, setPlayers] = useState<Player[]>(() =>
         INITIAL_PLAYERS.map(processPlayerWithStats)
     );
-    const [projectionStatus, setProjectionStatus] = useState<string | null>("Initializing AI projections...");
     const [draftPosition, setDraftPosition] = useState<number>(1);
     const [totalTeams, setTotalTeams] = useState<number>(12);
     const [currentPick, setCurrentPick] = useState<number>(1);
@@ -83,26 +85,17 @@ const App: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [viewMode, setViewMode] = useState<'draft' | 'analytics'>('draft');
     const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [isPlayerWorkstationOpen, setIsPlayerWorkstationOpen] = useState(false);
     const [selectedPlayerForAnalysis, setSelectedPlayerForAnalysis] = useState<Player | null>(null);
     const [playerOutlook, setPlayerOutlook] = useState<PlayerOutlook | null>(null);
-
-    const projectionsLoaded = useMemo(() => projectionStatus === null, [projectionStatus]);
 
     const availablePlayers = useMemo(() =>
         players
             .filter(p => !p.drafted)
             .filter(p => selectedPosition === 'ALL' || p.position === selectedPosition)
             .filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
-            .sort((a, b) => {
-                 if (projectionsLoaded) {
-                    return (b.fantasyPointsPerGame2025Projected ?? 0) - (a.fantasyPointsPerGame2025Projected ?? 0);
-                }
-                // Before projections are loaded, sort by ADP (lower is better).
-                return (a.adp ?? 999) - (b.adp ?? 999);
-            }),
-    [players, selectedPosition, searchQuery, projectionsLoaded]);
+            .sort((a, b) => (b.fantasyPointsPerGame2025Projected ?? 0) - (a.fantasyPointsPerGame2025Projected ?? 0)),
+    [players, selectedPosition, searchQuery]);
     
     const draftedPlayers = useMemo(() => players.filter(p => p.drafted).sort((a, b) => (a.draftPick ?? 0) - (b.draftPick ?? 0)), [players]);
     const myTeamPlayers = useMemo(() => players.filter(p => p.teamNumber === draftPosition), [players, draftPosition]);
@@ -118,45 +111,6 @@ const App: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        const fetchProjectionsInBatches = async () => {
-            const positionGroups = [
-                { position: Position.QB, name: "Quarterbacks" },
-                { position: Position.RB, name: "Running Backs" },
-                { position: Position.WR, name: "Wide Receivers" },
-                { position: Position.TE, name: "Tight Ends" },
-                { position: Position.K, name: "Kickers" },
-                { position: Position.DST, name: "Defenses" },
-            ];
-
-            try {
-                for (const group of positionGroups) {
-                    setProjectionStatus(`Analyzing ${group.name}...`);
-                    const playersToProject = INITIAL_PLAYERS.filter(p => p.position === group.position);
-
-                    if (playersToProject.length === 0) continue;
-
-                    const projectedPlayersFromApi = await getProjections(playersToProject);
-                    const playersWithAIStats = projectedPlayersFromApi.map(processPlayerWithStats);
-                    
-                    setPlayers(prevPlayers => prevPlayers.map(p => {
-                        const updatedPlayer = playersWithAIStats.find(up => up.id === p.id);
-                        return updatedPlayer || p;
-                    }));
-                }
-            } catch (error) {
-                console.error("Failed to get one or more player projection batches:", error);
-                setProjectionStatus("Error fetching some AI projections. Using fallback data.");
-                setTimeout(() => setProjectionStatus(null), 5000);
-                return;
-            }
-
-            setProjectionStatus(null);
-        };
-
-        fetchProjectionsInBatches();
-    }, []);
-
-    useEffect(() => {
         setAiAnalysis(null);
 
         const handler = setTimeout(() => {
@@ -164,7 +118,7 @@ const App: React.FC = () => {
                 .filter(p => !p.drafted)
                 .sort((a, b) => (b.fantasyPointsPerGame2025Projected ?? 0) - (a.fantasyPointsPerGame2025Projected ?? 0));
             
-            if (allAvailablePlayers.length > 0 && projectionsLoaded) {
+            if (allAvailablePlayers.length > 0) {
                 const myPicks = Array.from({ length: players.length }, (_, i) => i + 1)
                 .filter(pick => getTeamForPick(pick, totalTeams) === draftPosition);
                 
@@ -177,18 +131,15 @@ const App: React.FC = () => {
                     }
                 }
                 
-                getDraftAnalysis(myTeamPlayers, allAvailablePlayers, draftedPlayers, currentPick, myNextPick, teamsPickingBeforeNext)
-                    .then(analysis => setAiAnalysis(analysis))
-                    .catch(err => {
-                        console.error("Error fetching AI analysis:", err);
-                    });
+                const analysis = getDraftAnalysis(myTeamPlayers, allAvailablePlayers, draftedPlayers, currentPick, myNextPick, teamsPickingBeforeNext);
+                setAiAnalysis(analysis);
             }
         }, 500);
 
         return () => {
             clearTimeout(handler);
         };
-    }, [players, currentPick, draftPosition, totalTeams, getTeamForPick, myTeamPlayers, draftedPlayers, projectionsLoaded]);
+    }, [players, currentPick, draftPosition, totalTeams, getTeamForPick, myTeamPlayers, draftedPlayers]);
     
     useEffect(() => {
         if (isPlayerWorkstationOpen) {
@@ -219,8 +170,7 @@ const App: React.FC = () => {
         setIsPlayerWorkstationOpen(false);
     };
 
-    const handleAnalyzeTeam = useCallback(async () => {
-        setIsAnalyzing(true);
+    const handleAnalyzeTeam = useCallback(() => {
         const allDraftedPlayers = players.filter(p => p.drafted);
         const positionsToAnalyze: Position[] = [Position.QB, Position.RB, Position.WR, Position.TE];
 
@@ -264,14 +214,13 @@ const App: React.FC = () => {
             });
         }
         
-        const teamAnalysis = await getTeamAnalysis(myTeamPlayers, positionalAdvantages, totalTeams);
+        const teamAnalysis = getTeamAnalysis(myTeamPlayers, positionalAdvantages, totalTeams);
 
         setAnalyticsData({ teamAnalysis, positionalAdvantages });
         setViewMode('analytics');
-        setIsAnalyzing(false);
     }, [players, totalTeams, draftPosition, myTeamPlayers]);
 
-    const handleSelectPlayerForAnalysis = useCallback(async (playerId: number) => {
+    const handleSelectPlayerForAnalysis = useCallback((playerId: number) => {
         const player = players.find(p => p.id === playerId);
         if (!player) {
             console.error("Player not found for analysis");
@@ -282,13 +231,8 @@ const App: React.FC = () => {
         setPlayerOutlook(null); // Clear previous outlook while fetching new one
         setIsPlayerWorkstationOpen(true);
     
-        try {
-            const outlook = await getPlayerOutlook(player);
-            setPlayerOutlook(outlook);
-        } catch (error) {
-            console.error("Failed to get player outlook:", error);
-            // The service has a fallback, so outlook will still be a valid object
-        }
+        const outlook = getPlayerOutlook(player);
+        setPlayerOutlook(outlook);
     }, [players]);
 
     const recommendedPlayer = useMemo(() => {
@@ -314,9 +258,7 @@ const App: React.FC = () => {
                 totalTeams={totalTeams}
                 teamOnTheClock={teamOnTheClock}
                 isMyTurn={teamOnTheClock === draftPosition}
-                projectionStatus={projectionStatus}
                 onAnalyze={handleAnalyzeTeam}
-                isAnalyzing={isAnalyzing}
                 canAnalyze={myTeamPlayers.length > 0}
             />
             <main className="container mx-auto p-4 lg:p-6">

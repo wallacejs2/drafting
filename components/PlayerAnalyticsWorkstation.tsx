@@ -99,12 +99,12 @@ const PlayerAnalyticsWorkstation: React.FC<PlayerAnalyticsWorkstationProps> = ({
                     {!outlook ? (
                         <div className="flex flex-col items-center justify-center h-96">
                             <div className="w-12 h-12 border-4 border-brand-accent border-t-transparent rounded-full animate-spin"></div>
-                            <p className="mt-4 text-md text-brand-text font-semibold">AI is analyzing {player.name}...</p>
+                            <p className="mt-4 text-md text-brand-text font-semibold">Analyzing {player.name}...</p>
                         </div>
                     ) : (
                         <div className="flex flex-col gap-6">
                             <div className="bg-brand-primary/50 border border-brand-border/50 rounded-lg p-4">
-                                <h2 className="text-xl font-bold text-brand-text mb-3">AI Season Outlook</h2>
+                                <h2 className="text-xl font-bold text-brand-text mb-3">Season Outlook</h2>
                                 <p className="text-brand-subtle leading-relaxed mb-4 text-sm">{outlook.summary}</p>
                                 <div className="border-t border-brand-border pt-4">
                                      <div className="flex items-center gap-3 mb-2">

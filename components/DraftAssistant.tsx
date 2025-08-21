@@ -95,14 +95,14 @@ const DraftAssistant: React.FC<DraftAssistantProps> = ({
                     {isMyTurn ? (
                          <h2 className="text-2xl font-bold text-green-400 animate-pulse">YOU ARE ON THE CLOCK!</h2>
                     ) : (
-                         <h2 className="text-xl font-bold text-brand-text">AI Analysis</h2>
+                         <h2 className="text-xl font-bold text-brand-text">Draft Analysis</h2>
                     )}
                 </div>
                 
                 {!analysis || !player ? (
                     <div className="flex justify-center items-center h-64">
                         <div className="w-8 h-8 border-2 border-brand-accent border-t-transparent rounded-full animate-spin"></div>
-                         <p className="ml-3 text-brand-subtle">AI is thinking...</p>
+                         <p className="ml-3 text-brand-subtle">Calculating...</p>
                     </div>
                 ) : (
                     <>
