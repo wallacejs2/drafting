@@ -103,7 +103,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, onDraft, onAnalyzePlaye
                         <div className="flex justify-between items-center text-center">
                             <div className="flex-1">
                                 <p className="text-xs text-text-secondary">AI PROJ.</p>
-                                <p className="text-xl font-bold text-accent-positive">{player.fantasyPointsPerGame2024Projected?.toFixed(1) ?? 'N/A'}</p>
+                                <p className="text-xl font-bold text-accent-positive">{player.fantasyPointsPerGame2025Projected?.toFixed(1) ?? 'N/A'}</p>
                             </div>
                             <div className="flex-1">
                                 <p className="text-xs text-text-secondary">ESPN</p>

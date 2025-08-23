@@ -58,7 +58,7 @@ const MyTeam: React.FC<MyTeamProps> = ({ players, totalTeams }) => {
                                     <p className="text-xs text-text-secondary">{player.position} - {player.team} (Bye {player.byeWeek})</p>
                                 </div>
                             </div>
-                            <span className="font-bold text-accent-positive text-lg">{player.fantasyPointsPerGame2024Projected?.toFixed(1)}</span>
+                            <span className="font-bold text-accent-positive text-lg">{player.fantasyPointsPerGame2025Projected?.toFixed(1)}</span>
                         </div>
                     ))
                 ) : (

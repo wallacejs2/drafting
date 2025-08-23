@@ -3,8 +3,8 @@ import type { Stats } from '../types';
 import { Position } from '../types';
 
 interface StatComparisonChartProps {
-    stats2023: Stats;
-    stats2024Projected: Stats | undefined;
+    stats2024: Stats;
+    stats2025Projected: Stats | undefined;
     position: Position;
 }
 
@@ -26,23 +26,23 @@ const Bar: React.FC<{ value: number; maxValue: number; color: string; label: str
 };
 
 
-const StatGroup: React.FC<{ title: string; value2023: number; value2024: number }> = ({ title, value2023, value2024 }) => {
-    const maxValue = Math.max(value2023, value2024, 0) * 1.1;
+const StatGroup: React.FC<{ title: string; value2024: number; value2025: number }> = ({ title, value2024, value2025 }) => {
+    const maxValue = Math.max(value2024, value2025, 0) * 1.1;
 
     return (
         <div>
             <h4 className="text-sm font-semibold text-text-primary mb-2">{title}</h4>
             <div className="space-y-1.5">
-                <Bar value={value2023} maxValue={maxValue} color="bg-text-secondary" label="2023" />
-                <Bar value={value2024} maxValue={maxValue} color="bg-accent-primary" label="2024" />
+                <Bar value={value2024} maxValue={maxValue} color="bg-text-secondary" label="2024" />
+                <Bar value={value2025} maxValue={maxValue} color="bg-accent-primary" label="2025" />
             </div>
         </div>
     );
 };
 
 
-const StatComparisonChart: React.FC<StatComparisonChartProps> = ({ stats2023, stats2024Projected, position }) => {
-    if (!stats2024Projected) return null;
+const StatComparisonChart: React.FC<StatComparisonChartProps> = ({ stats2024, stats2025Projected, position }) => {
+    if (!stats2025Projected) return null;
 
     const statsToCompare: { title: string; key: keyof Stats }[] = [];
 
@@ -91,8 +91,8 @@ const StatComparisonChart: React.FC<StatComparisonChartProps> = ({ stats2023, st
                     <StatGroup
                         key={key}
                         title={title}
-                        value2023={stats2023[key] as number ?? 0}
-                        value2024={stats2024Projected[key] as number ?? 0}
+                        value2024={stats2024[key] as number ?? 0}
+                        value2025={stats2025Projected[key] as number ?? 0}
                     />
                 ))}
             </div>

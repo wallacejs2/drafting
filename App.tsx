@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Player, AIAnalysis, AnalyticsData, PositionalAdvantage, PlayerOutlook } from './types';
 import { INITIAL_PLAYERS, UPDATED_PLAYER_DATA_SIMULATION, calculateFantasyPoints } from './constants';
@@ -15,6 +16,8 @@ import PerformanceAnalytics from './components/PerformanceAnalytics';
 import PlayerAnalyticsWorkstation from './components/PlayerAnalyticsWorkstation';
 import PlayerSearch from './components/PlayerSearch';
 import Loader from './components/Loader';
+import AboutModal from './components/AboutModal';
+import LeagueHistory from './components/LeagueHistory';
 
 const DRAFT_TIME_PER_PICK = 90; // 90 seconds per pick
 
@@ -109,24 +112,24 @@ const SyncModal: React.FC<{ results: string[] | null; onClose: () => void }> = (
 
 const initializePlayers = (initialPlayers: Player[]): Player[] => {
     let playersWithStats = initialPlayers.map(p => {
-        const fantasyPoints2023 = calculateFantasyPoints(p.stats2023, p.position, p.gamesPlayed2023);
-        const fantasyPointsPerGame2023 = p.gamesPlayed2023 > 0 ? parseFloat((fantasyPoints2023 / p.gamesPlayed2023).toFixed(2)) : 0;
+        const fantasyPoints2024 = calculateFantasyPoints(p.stats2024, p.position, p.gamesPlayed2024);
+        const fantasyPointsPerGame2024 = p.gamesPlayed2024 > 0 ? parseFloat((fantasyPoints2024 / p.gamesPlayed2024).toFixed(2)) : 0;
 
-        let baseFantasyPoints2024Projected: number;
-        let gamesPlayed2024Projected: number;
+        let baseFantasyPoints2025Projected: number;
+        let gamesPlayed2025Projected: number;
 
-        if (p.stats2024Projected && p.gamesPlayed2024Projected != null) {
-            gamesPlayed2024Projected = p.gamesPlayed2024Projected;
-            baseFantasyPoints2024Projected = calculateFantasyPoints(p.stats2024Projected, p.position, gamesPlayed2024Projected);
+        if (p.stats2025Projected && p.gamesPlayed2025Projected != null) {
+            gamesPlayed2025Projected = p.gamesPlayed2025Projected;
+            baseFantasyPoints2025Projected = calculateFantasyPoints(p.stats2025Projected, p.position, gamesPlayed2025Projected);
         } else {
             let fallbackProjectedGames = 17;
             if (p.injuryRisk === 'High') fallbackProjectedGames = 14;
             else if (p.injuryRisk === 'Medium') fallbackProjectedGames = 16;
             
-            gamesPlayed2024Projected = fallbackProjectedGames;
+            gamesPlayed2025Projected = fallbackProjectedGames;
             
-            let basePoints = fantasyPoints2023;
-            let gamesPlayedFactor = p.gamesPlayed2023 > 0 ? p.gamesPlayed2023 : 17;
+            let basePoints = fantasyPoints2024;
+            let gamesPlayedFactor = p.gamesPlayed2024 > 0 ? p.gamesPlayed2024 : 17;
 
             if (basePoints <= 0) {
                  switch(p.position) {
@@ -141,31 +144,31 @@ const initializePlayers = (initialPlayers: Player[]): Player[] => {
                 gamesPlayedFactor = 17;
             }
 
-            baseFantasyPoints2024Projected = (basePoints / gamesPlayedFactor) * gamesPlayed2024Projected * 0.95;
+            baseFantasyPoints2025Projected = (basePoints / gamesPlayedFactor) * gamesPlayed2025Projected * 0.95;
         }
 
         const catalysts = p.projectionModifiers?.catalysts?.length ?? 0;
         const concerns = p.projectionModifiers?.concerns?.length ?? 0;
         const modifierFactor = 1 + (catalysts * 0.02) - (concerns * 0.025);
-        const fantasyPoints2024Projected = baseFantasyPoints2024Projected * modifierFactor;
+        const fantasyPoints2025Projected = baseFantasyPoints2025Projected * modifierFactor;
         
-        const fantasyPointsPerGame2024Projected = gamesPlayed2024Projected > 0 ? parseFloat((fantasyPoints2024Projected / gamesPlayed2024Projected).toFixed(2)) : 0;
+        const fantasyPointsPerGame2025Projected = gamesPlayed2025Projected > 0 ? parseFloat((fantasyPoints2025Projected / gamesPlayed2025Projected).toFixed(2)) : 0;
 
         return {
             ...p,
             drafted: false, // Ensure reset
             draftPick: undefined,
             teamNumber: undefined,
-            fantasyPoints2023,
-            fantasyPointsPerGame2023,
-            fantasyPoints2024Projected,
-            gamesPlayed2024Projected,
-            fantasyPointsPerGame2024Projected,
+            fantasyPoints2024,
+            fantasyPointsPerGame2024,
+            fantasyPoints2025Projected,
+            gamesPlayed2025Projected,
+            fantasyPointsPerGame2025Projected,
         };
     });
 
     const playersSortedByProjection = [...playersWithStats]
-        .sort((a, b) => (b.fantasyPointsPerGame2024Projected ?? 0) - (a.fantasyPointsPerGame2024Projected ?? 0));
+        .sort((a, b) => (b.fantasyPointsPerGame2025Projected ?? 0) - (a.fantasyPointsPerGame2025Projected ?? 0));
 
     playersWithStats = playersWithStats.map(p => ({
         ...p,
@@ -173,7 +176,7 @@ const initializePlayers = (initialPlayers: Player[]): Player[] => {
     }));
 
     const maxPpgByPosition = playersWithStats.reduce((acc, player) => {
-        const ppg = player.fantasyPointsPerGame2024Projected ?? 0;
+        const ppg = player.fantasyPointsPerGame2025Projected ?? 0;
         if (!acc[player.position] || ppg > acc[player.position]) {
             acc[player.position] = ppg;
         }
@@ -181,14 +184,14 @@ const initializePlayers = (initialPlayers: Player[]): Player[] => {
     }, {} as Record<string, number>);
 
     const playersWithGrades = playersWithStats.map(player => {
-        const { fantasyPointsPerGame2024Projected, position, adp, projectionRank, injuryRisk, strengthOfSchedule, opportunityShare, tier } = player;
+        const { fantasyPointsPerGame2025Projected, position, adp, projectionRank, injuryRisk, strengthOfSchedule, opportunityShare, tier } = player;
 
         if (position === Position.K || position === Position.DST || !projectionRank) {
             return { ...player, draftGrade: 'N/A' };
         }
 
         const maxPpg = maxPpgByPosition[position] ?? 1;
-        const ppg = fantasyPointsPerGame2024Projected ?? 0;
+        const ppg = fantasyPointsPerGame2025Projected ?? 0;
         const pointsScore = (ppg / maxPpg) * 100;
 
         const valueDiff = (adp ?? 200) - projectionRank;
@@ -223,7 +226,7 @@ const App: React.FC = () => {
     const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
     const [selectedPosition, setSelectedPosition] = useState<Position | 'ALL' | 'FLEX'>('ALL');
     const [searchQuery, setSearchQuery] = useState('');
-    const [viewMode, setViewMode] = useState<'draft' | 'analytics'>('draft');
+    const [viewMode, setViewMode] = useState<'draft' | 'analytics' | 'history'>('draft');
     const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
     const [isPlayerWorkstationOpen, setIsPlayerWorkstationOpen] = useState(false);
     const [selectedPlayerForAnalysis, setSelectedPlayerForAnalysis] = useState<Player | null>(null);
@@ -231,6 +234,7 @@ const App: React.FC = () => {
     const [isSyncing, setIsSyncing] = useState(false);
     const [syncResults, setSyncResults] = useState<string[] | null>(null);
     const [timeRemaining, setTimeRemaining] = useState(DRAFT_TIME_PER_PICK);
+    const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
 
     const availablePlayers = useMemo(() =>
         players
@@ -363,10 +367,10 @@ const App: React.FC = () => {
                     changes.push(`${originalPlayer.name}: Note updated`);
                 }
 
-                const games = update.gamesPlayed2024Projected ?? originalPlayer.gamesPlayed2024Projected ?? 17;
-                const originalPpg = originalPlayer.fantasyPointsPerGame2024Projected ?? 0;
-                if (update.stats2024Projected) {
-                    const newPpg = parseFloat((calculateFantasyPoints(update.stats2024Projected, originalPlayer.position, games) / games).toFixed(2));
+                const games = update.gamesPlayed2025Projected ?? originalPlayer.gamesPlayed2025Projected ?? 17;
+                const originalPpg = originalPlayer.fantasyPointsPerGame2025Projected ?? 0;
+                if (update.stats2025Projected) {
+                    const newPpg = parseFloat((calculateFantasyPoints(update.stats2025Projected, originalPlayer.position, games) / games).toFixed(2));
                     if (newPpg.toFixed(1) !== originalPpg.toFixed(1)) {
                         const arrow = originalPpg > newPpg ? '↓' : '↑';
                         changes.push(`${originalPlayer.name}: AI Proj ${arrow} ${originalPpg.toFixed(1)} → ${newPpg.toFixed(1)} PPG`);
@@ -421,7 +425,7 @@ const App: React.FC = () => {
             if (player.teamNumber && positionsToAnalyze.includes(player.position)) {
                 const teamData = teamsData.get(player.teamNumber);
                 if (teamData) {
-                    teamData[player.position] += player.fantasyPointsPerGame2024Projected ?? 0;
+                    teamData[player.position] += player.fantasyPointsPerGame2025Projected ?? 0;
                 }
             }
         }
@@ -457,6 +461,10 @@ const App: React.FC = () => {
         setAnalyticsData({ teamAnalysis, positionalAdvantages });
         setViewMode('analytics');
     }, [players, totalTeams, draftPosition, myTeamPlayers]);
+    
+    const handleAnalyzeHistory = () => {
+        setViewMode('history');
+    };
 
     const handleSelectPlayerForAnalysis = useCallback((playerId: number) => {
         const player = players.find(p => p.id === playerId);
@@ -482,11 +490,16 @@ const App: React.FC = () => {
     if (viewMode === 'analytics') {
         return <PerformanceAnalytics analyticsData={analyticsData} onBackToDraft={handleBackToDraft} />;
     }
+    
+    if (viewMode === 'history') {
+        return <LeagueHistory onBackToDraft={handleBackToDraft} />;
+    }
 
     return (
         <div className="min-h-screen bg-bg-primary font-sans">
             {isSyncing && <Loader message="Syncing latest player data from all sources..." />}
             <SyncModal results={syncResults} onClose={() => setSyncResults(null)} />
+            <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
             <Header 
                 currentPick={currentPick}
                 totalTeams={totalTeams}
@@ -498,6 +511,8 @@ const App: React.FC = () => {
                 onResetDraft={handleResetDraft}
                 isSyncing={isSyncing}
                 timeRemaining={timeRemaining}
+                onOpenAbout={() => setIsAboutModalOpen(true)}
+                onAnalyzeHistory={handleAnalyzeHistory}
             />
             <main className="container mx-auto p-4 lg:p-6">
                 <div className="mb-6 bg-bg-secondary border border-border-primary rounded-lg p-4">

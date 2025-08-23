@@ -126,7 +126,7 @@ const DraftAssistant: React.FC<DraftAssistantProps> = ({
                                         <h3 className="text-2xl font-bold text-text-primary">{player.name}</h3>
                                         <InjuryRiskBadge risk={player.injuryRisk} />
                                     </div>
-                                    <p className="text-3xl font-bold text-accent-positive">{player.fantasyPointsPerGame2024Projected?.toFixed(2)} <span className="text-lg text-text-secondary">PROJ. PPG</span></p>
+                                    <p className="text-3xl font-bold text-accent-positive">{player.fantasyPointsPerGame2025Projected?.toFixed(2)} <span className="text-lg text-text-secondary">PROJ. PPG</span></p>
                                 </div>
                                 <p className="text-text-secondary text-xs leading-relaxed mt-2 p-2 bg-bg-secondary rounded-md h-16 overflow-y-auto">
                                     {analysis.primary.reasoning}

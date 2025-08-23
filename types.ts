@@ -46,14 +46,14 @@ export interface Player {
     adp?: number;
     espnRank?: number;
     opportunityShare: 'High' | 'Medium' | 'Low';
-    stats2023: Stats;
-    gamesPlayed2023: number;
-    stats2024Projected?: Stats;
-    gamesPlayed2024Projected?: number;
-    fantasyPoints2023?: number;
-    fantasyPointsPerGame2023?: number;
-    fantasyPoints2024Projected?: number;
-    fantasyPointsPerGame2024Projected?: number;
+    stats2024: Stats;
+    gamesPlayed2024: number;
+    stats2025Projected?: Stats;
+    gamesPlayed2025Projected?: number;
+    fantasyPoints2024?: number;
+    fantasyPointsPerGame2024?: number;
+    fantasyPoints2025Projected?: number;
+    fantasyPointsPerGame2025Projected?: number;
     espnPpgProjected?: number;
     sleeperPpgProjected?: number;
     projectionModifiers?: {
@@ -108,4 +108,22 @@ export interface PlayerOutlook {
   verdict: string;
   riskRewardScore: number;
   expertConsensus: string;
+}
+
+export interface LeagueHistoryRecord {
+  owner: string;
+  year: number;
+  team_name: string;
+  win: number;
+  loss: number;
+  draws: number;
+  final_standing: number;
+  points_for: number;
+  points_against: number;
+  acquisitions: number;
+  trades: number;
+  drops: number;
+  streak_length: number;
+  streak_type: 'WIN' | 'LOSS';
+  playoff_seed: number;
 }

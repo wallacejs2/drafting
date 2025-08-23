@@ -123,8 +123,8 @@ const PlayerAnalyticsWorkstation: React.FC<PlayerAnalyticsWorkstationProps> = ({
                                 <p className="text-sm font-semibold text-sky-300 mt-2 bg-sky-900/50 px-2 py-1 rounded-md inline-block" title={player.archetype}>{player.archetype}</p>
                             </div>
                             <div className="text-center md:text-right">
-                                <p className="text-xs text-text-secondary">2024 PROJ. PPG</p>
-                                <p className="text-4xl font-bold text-accent-positive">{player.fantasyPointsPerGame2024Projected?.toFixed(2)}</p>
+                                <p className="text-xs text-text-secondary">2025 PROJ. PPG</p>
+                                <p className="text-4xl font-bold text-accent-positive">{player.fantasyPointsPerGame2025Projected?.toFixed(2)}</p>
                             </div>
                         </div>
                     </div>
@@ -175,8 +175,8 @@ const PlayerAnalyticsWorkstation: React.FC<PlayerAnalyticsWorkstationProps> = ({
                             </div>
 
                             <StatComparisonChart
-                                stats2023={player.stats2023}
-                                stats2024Projected={player.stats2024Projected}
+                                stats2024={player.stats2024}
+                                stats2025Projected={player.stats2025Projected}
                                 position={player.position}
                             />
                         </div>

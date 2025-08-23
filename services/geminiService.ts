@@ -190,13 +190,13 @@ export const getPlayerOutlook = (player: Player): PlayerOutlook => {
     if (player.opportunityShare === 'Low') riskRewardScore += 2;
     if (player.opportunityShare === 'High') riskRewardScore -= 1;
     
-    if (player.gamesPlayed2023 === 0) {
+    if (player.gamesPlayed2024 === 0) {
         riskRewardScore += 1;
     }
     
     riskRewardScore = Math.max(1, Math.min(10, riskRewardScore));
     
-    const summary = `${player.name} is a Tier ${player.tier} ${player.position} for the ${player.team}, fitting the '${player.archetype}' profile. With a ${player.injuryRisk.toLowerCase()} injury risk, they are projected for a solid season, expecting to play around ${player.gamesPlayed2024Projected} games and are a key piece of their team's offense.`;
+    const summary = `${player.name} is a Tier ${player.tier} ${player.position} for the ${player.team}, fitting the '${player.archetype}' profile. With a ${player.injuryRisk.toLowerCase()} injury risk, they are projected for a solid season, expecting to play around ${player.gamesPlayed2025Projected} games and are a key piece of their team's offense.`;
     
     let expertConsensus = `Industry consensus is high on ${player.name}, citing his ${player.opportunityShare.toLowerCase()} opportunity share as a key factor for a productive season. `;
     if (player.espnRank && player.adp) {
