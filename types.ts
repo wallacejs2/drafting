@@ -25,6 +25,7 @@ export interface Stats {
     // For DST
     sacks?: number;
     defensiveInterceptions?: number;
+
     fumblesRecovered?: number;
     safeties?: number;
     defensiveTds?: number;
@@ -37,19 +38,28 @@ export interface Player {
     name: string;
     position: Position;
     team: string;
+    byeWeek: number;
+    tier: number;
+    archetype: string;
     injuryRisk: 'Low' | 'Medium' | 'High';
+    strengthOfSchedule: number; // Rank from 1 (easiest) to 32 (hardest)
     adp?: number;
-    stats2024: Stats;
-    gamesPlayed2024: number;
-    stats2025Projected?: Stats;
-    gamesPlayed2025Projected?: number;
-    fantasyPoints2024?: number;
-    fantasyPointsPerGame2024?: number;
-    fantasyPoints2025Projected?: number;
-    fantasyPointsPerGame2025Projected?: number;
+    espnRank?: number;
+    opportunityShare: 'High' | 'Medium' | 'Low';
+    stats2023: Stats;
+    gamesPlayed2023: number;
+    stats2024Projected?: Stats;
+    gamesPlayed2024Projected?: number;
+    fantasyPoints2023?: number;
+    fantasyPointsPerGame2023?: number;
+    fantasyPoints2024Projected?: number;
+    fantasyPointsPerGame2024Projected?: number;
     drafted: boolean;
     draftPick?: number;
     teamNumber?: number;
+    draftGrade?: string;
+    projectionRank?: number;
+    notes?: string;
 }
 
 export interface AIRecommendation {
@@ -62,6 +72,7 @@ export interface AIAnalysis {
   alternatives: AIRecommendation[];
   predictions: string[];
   positionalAnalysis: Record<string, number>;
+  strategicNarrative: string;
 }
 
 export interface PositionalAdvantage {
@@ -76,6 +87,7 @@ export interface TeamAnalysis {
   title: string;
   summary: string;
   insights: string[];
+  archetypeCounts: Record<string, number>;
 }
 
 export interface AnalyticsData {
@@ -89,4 +101,5 @@ export interface PlayerOutlook {
   downside: string;
   verdict: string;
   riskRewardScore: number;
+  expertConsensus: string;
 }

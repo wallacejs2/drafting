@@ -36,14 +36,13 @@ const PlayerAnalyticsWorkstation: React.FC<PlayerAnalyticsWorkstationProps> = ({
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
-        // Delay to allow the component to mount before starting the transition
         const timer = setTimeout(() => setIsVisible(true), 10);
         return () => clearTimeout(timer);
     }, []);
 
     const handleClose = () => {
         setIsVisible(false);
-        setTimeout(onClose, 300); // Wait for animation to finish before calling parent's close handler
+        setTimeout(onClose, 300);
     };
 
     if (!player) {
@@ -52,14 +51,12 @@ const PlayerAnalyticsWorkstation: React.FC<PlayerAnalyticsWorkstationProps> = ({
 
     return (
         <div role="dialog" aria-modal="true" className="fixed inset-0 z-50">
-            {/* Backdrop */}
             <div
                 className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'}`}
                 onClick={handleClose}
                 aria-hidden="true"
             ></div>
 
-            {/* Side Panel */}
             <div
                 className={`absolute top-0 right-0 h-full w-full max-w-lg bg-brand-secondary border-l border-brand-border shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out ${isVisible ? 'translate-x-0' : 'translate-x-full'}`}
             >
@@ -78,20 +75,20 @@ const PlayerAnalyticsWorkstation: React.FC<PlayerAnalyticsWorkstationProps> = ({
                 </header>
 
                 <main className="flex-grow overflow-y-auto p-4 md:p-6">
-                    {/* Player Header */}
                     <div className="bg-brand-primary/50 border border-brand-border/50 rounded-lg p-4 mb-6">
                         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                             <div>
                                 <h2 className="text-3xl font-bold text-brand-text">{player.name}</h2>
                                 <div className="flex items-center gap-4 mt-2 flex-wrap">
                                     <p className="text-lg font-semibold text-brand-accent">{player.position} - {player.team}</p>
-                                    <InjuryRiskBadge risk={player.injuryRisk} />
-                                    {player.adp && <p className="text-sm font-mono bg-brand-primary px-2 py-1 rounded text-brand-subtle">ADP {player.adp}</p>}
+                                    <p className="text-sm font-bold bg-gray-600 px-2 py-1 rounded text-gray-200">TIER {player.tier}</p>
+                                    <p className="text-sm font-bold bg-brand-primary px-2 py-1 rounded text-brand-subtle">BYE {player.byeWeek}</p>
                                 </div>
+                                <p className="text-sm font-semibold text-sky-300 mt-2 bg-sky-900/50 px-2 py-1 rounded-md inline-block" title={player.archetype}>{player.archetype}</p>
                             </div>
                             <div className="text-center md:text-right">
-                                <p className="text-xs text-brand-subtle">2025 PROJ. PPG</p>
-                                <p className="text-4xl font-bold text-green-400">{player.fantasyPointsPerGame2025Projected?.toFixed(2)}</p>
+                                <p className="text-xs text-brand-subtle">2024 PROJ. PPG</p>
+                                <p className="text-4xl font-bold text-green-400">{player.fantasyPointsPerGame2024Projected?.toFixed(2)}</p>
                             </div>
                         </div>
                     </div>
@@ -115,6 +112,19 @@ const PlayerAnalyticsWorkstation: React.FC<PlayerAnalyticsWorkstationProps> = ({
                                 </div>
                             </div>
                             
+                            <div className="bg-brand-primary/50 border border-brand-border/50 rounded-lg p-4">
+                                <h3 className="text-lg font-bold text-brand-text mb-2 flex items-center gap-2">
+                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M10 2a6 6 0 00-6 6c0 1.887 1.12 3.526 2.735 4.316C6.54 13.376 8.18 14 10 14c1.82 0 3.46-.624 4.265-1.684C15.88 11.526 17 9.887 17 8a7 7 0 00-7-7h-1z" clipRule="evenodd" />
+                                        <path d="M10 2a6 6 0 00-6 6c0 1.887 1.12 3.526 2.735 4.316C6.54 13.376 8.18 14 10 14c1.82 0 3.46-.624 4.265-1.684C15.88 11.526 17 9.887 17 8a7 7 0 00-7-7h-1z" opacity=".5" />
+                                        <path d="M10 15c-1.887 0-3.526-1.12-4.316-2.735C4.624 11.46 4 9.82 4 8a6 6 0 016-6v1z" fill="#FBBF24" />
+                                        <path d="M10 15c-1.887 0-3.526-1.12-4.316-2.735C4.624 11.46 4 9.82 4 8a6 6 0 016-6v1z" opacity=".5" />
+                                    </svg>
+                                    Expert Consensus
+                                </h3>
+                                <p className="text-brand-subtle text-sm">{outlook.expertConsensus}</p>
+                            </div>
+                            
                             <RiskRewardGauge score={outlook.riskRewardScore} />
                             
                             <div className="space-y-4">
@@ -127,8 +137,8 @@ const PlayerAnalyticsWorkstation: React.FC<PlayerAnalyticsWorkstationProps> = ({
                             </div>
 
                             <StatComparisonChart
-                                stats2024={player.stats2024}
-                                stats2025={player.stats2025Projected}
+                                stats2023={player.stats2023}
+                                stats2024Projected={player.stats2024Projected}
                                 position={player.position}
                             />
                         </div>

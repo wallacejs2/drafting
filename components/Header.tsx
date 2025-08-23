@@ -7,15 +7,17 @@ interface HeaderProps {
     isMyTurn: boolean;
     onAnalyze: () => void;
     canAnalyze: boolean;
+    onSyncData: () => void;
+    isSyncing: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ currentPick, totalTeams, teamOnTheClock, isMyTurn, onAnalyze, canAnalyze }) => {
+const Header: React.FC<HeaderProps> = ({ currentPick, totalTeams, teamOnTheClock, isMyTurn, onAnalyze, canAnalyze, onSyncData, isSyncing }) => {
     
     const round = Math.floor((currentPick - 1) / totalTeams) + 1;
     const pickInRound = ((currentPick - 1) % totalTeams) + 1;
 
     return (
-        <header className="bg-brand-secondary border-b border-brand-border shadow-md sticky top-0 z-10">
+        <header className="bg-brand-secondary border-b border-brand-border shadow-md sticky top-0 z-20">
             <div className="container mx-auto px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-brand-accent" viewBox="0 0 20 20" fill="currentColor">
@@ -33,10 +35,27 @@ const Header: React.FC<HeaderProps> = ({ currentPick, totalTeams, teamOnTheClock
                          <p className="text-sm font-semibold text-brand-subtle">Team {teamOnTheClock} is picking</p>
                     )}
                 </div>
-                 <div>
+                 <div className="flex items-center gap-2">
+                     <button
+                        onClick={onSyncData}
+                        disabled={isSyncing}
+                        className="bg-brand-accent text-white font-bold py-2 px-4 rounded-md hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition-all duration-200 disabled:bg-gray-500 disabled:cursor-not-allowed flex items-center text-sm"
+                    >
+                        {isSyncing ? (
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        ) : (
+                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                            </svg>
+                        )}
+                        <span>{isSyncing ? 'Syncing...' : 'Sync Data'}</span>
+                    </button>
                     <button
                         onClick={onAnalyze}
-                        disabled={!canAnalyze}
+                        disabled={!canAnalyze || isSyncing}
                         className="bg-green-600 text-white font-bold py-2 px-4 rounded-md hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 transition-all duration-200 disabled:bg-gray-500 disabled:cursor-not-allowed flex items-center text-sm"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">

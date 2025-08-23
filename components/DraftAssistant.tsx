@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import type { Player, AIAnalysis } from '../types';
+import TierDropAnalysis from './TierDropAnalysis';
+import ValueBoard from './ValueBoard';
 
 interface DraftAssistantProps {
     player: Player | null;
@@ -11,6 +13,7 @@ interface DraftAssistantProps {
     currentPick: number;
     onDraft: (playerId: number) => void;
     teamOnTheClock: number;
+    availablePlayers: Player[];
 }
 
 const InjuryRiskBadge: React.FC<{ risk: Player['injuryRisk'] }> = ({ risk }) => {
@@ -35,7 +38,8 @@ const DraftAssistant: React.FC<DraftAssistantProps> = ({
     setTotalTeams,
     currentPick,
     onDraft,
-    teamOnTheClock
+    teamOnTheClock,
+    availablePlayers
 }) => {
     const [settingsOpen, setSettingsOpen] = useState(false);
     const isMyTurn = teamOnTheClock === draftPosition;
@@ -107,6 +111,14 @@ const DraftAssistant: React.FC<DraftAssistantProps> = ({
                 ) : (
                     <>
                         <div>
+                            <h3 className="text-sm font-bold text-brand-text uppercase mb-2">AI Strategic Narrative</h3>
+                            <div className="bg-brand-primary rounded-lg p-3 h-28 overflow-y-auto">
+                                <p className="text-brand-subtle text-sm leading-relaxed">
+                                    {analysis.strategicNarrative}
+                                </p>
+                            </div>
+                        </div>
+                        <div>
                             <h3 className="text-sm font-bold text-brand-text uppercase mb-2">Primary Recommendation</h3>
                             <div className="bg-brand-primary rounded-lg p-3">
                                 <div className="text-center">
@@ -114,9 +126,9 @@ const DraftAssistant: React.FC<DraftAssistantProps> = ({
                                         <h3 className="text-2xl font-bold text-brand-text">{player.name}</h3>
                                         <InjuryRiskBadge risk={player.injuryRisk} />
                                     </div>
-                                    <p className="text-3xl font-bold text-green-400">{player.fantasyPointsPerGame2025Projected?.toFixed(2)} <span className="text-lg text-brand-subtle">PROJ. PPG</span></p>
+                                    <p className="text-3xl font-bold text-green-400">{player.fantasyPointsPerGame2024Projected?.toFixed(2)} <span className="text-lg text-brand-subtle">PROJ. PPG</span></p>
                                 </div>
-                                <p className="text-brand-subtle text-sm leading-relaxed mt-2 p-2 bg-brand-secondary rounded-md h-20 overflow-y-auto">
+                                <p className="text-brand-subtle text-xs leading-relaxed mt-2 p-2 bg-brand-secondary rounded-md h-16 overflow-y-auto">
                                     {analysis.primary.reasoning}
                                 </p>
                             </div>
@@ -134,15 +146,9 @@ const DraftAssistant: React.FC<DraftAssistantProps> = ({
                             </div>
                         </div>
 
-                        <div>
-                            <h3 className="text-sm font-bold text-brand-text uppercase mb-2">Watch List <span className="normal-case text-brand-subtle text-xs">(Predicted picks before your next turn)</span></h3>
-                             <div className="grid grid-cols-3 gap-2 text-center">
-                                {analysis.predictions.map((name, index) => (
-                                    <div key={index} className="bg-brand-primary rounded p-1">
-                                        <p className="text-xs text-brand-text truncate font-semibold">{name}</p>
-                                    </div>
-                                ))}
-                            </div>
+                        <div className="space-y-4">
+                            <ValueBoard availablePlayers={availablePlayers} />
+                            <TierDropAnalysis availablePlayers={availablePlayers} />
                         </div>
 
                         <button

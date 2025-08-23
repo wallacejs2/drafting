@@ -44,6 +44,28 @@ const PositionalCard: React.FC<{ advantage: PositionalAdvantage }> = ({ advantag
     );
 };
 
+const RosterCompositionCard: React.FC<{ archetypes: Record<string, number> }> = ({ archetypes }) => {
+    const sortedArchetypes = Object.entries(archetypes).sort(([, a], [, b]) => b - a);
+
+    if (sortedArchetypes.length === 0) {
+        return null;
+    }
+
+    return (
+         <div className="bg-brand-secondary border border-brand-border rounded-lg p-6">
+            <h2 className="text-xl font-bold text-brand-text mb-4">Roster Composition</h2>
+            <div className="space-y-3">
+                {sortedArchetypes.map(([archetype, count]) => (
+                    <div key={archetype} className="flex justify-between items-center text-sm">
+                        <span className="font-semibold text-brand-text">{archetype}</span>
+                        <span className="font-bold bg-brand-primary px-2 py-0.5 rounded-md text-brand-accent">{count}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
 const PerformanceAnalytics: React.FC<PerformanceAnalyticsProps> = ({ analyticsData, onBackToDraft }) => {
 
     if (!analyticsData) {
@@ -87,6 +109,7 @@ const PerformanceAnalytics: React.FC<PerformanceAnalyticsProps> = ({ analyticsDa
                                 ))}
                             </ul>
                         </div>
+                         <RosterCompositionCard archetypes={teamAnalysis.archetypeCounts} />
                     </div>
 
                     {/* Right Column: Positional Breakdown */}

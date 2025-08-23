@@ -22,7 +22,7 @@ const DraftedPlayers: React.FC<DraftedPlayersProps> = ({ players }) => {
                                     <p className="text-xs text-brand-subtle">{player.position} - {player.team} <span className="font-semibold">(T{player.teamNumber})</span></p>
                                 </div>
                             </div>
-                            <span className="font-bold text-green-400 text-lg">{player.fantasyPointsPerGame2025Projected?.toFixed(1)}</span>
+                            <span className="font-bold text-green-400 text-lg">{player.fantasyPointsPerGame2024Projected?.toFixed(1)}</span>
                         </div>
                     ))
                 ) : (
