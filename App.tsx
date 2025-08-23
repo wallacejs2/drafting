@@ -66,38 +66,38 @@ const scoreToGrade = (score: number): string => {
 };
 
 // --- Sync Results Modal Component ---
-const SyncResultsModal: React.FC<{ results: string[] | null; onClose: () => void }> = ({ results, onClose }) => {
+const SyncModal: React.FC<{ results: string[] | null; onClose: () => void }> = ({ results, onClose }) => {
     if (!results) return null;
 
     return (
-        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose} aria-hidden="true"></div>
-            <div className="relative bg-brand-secondary border border-brand-border rounded-lg shadow-2xl w-full max-w-md m-auto flex flex-col animate-fade-in">
-                <header className="flex items-center justify-between p-4 border-b border-brand-border">
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center p-4 font-sans">
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in" onClick={onClose} aria-hidden="true"></div>
+            <div className="relative bg-bg-secondary border border-border-primary rounded-lg shadow-2xl w-full max-w-md m-auto flex flex-col animate-fade-in">
+                <header className="flex items-center justify-between p-4 border-b border-border-primary">
                     <div className="flex items-center gap-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-accent-positive" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
-                        <h2 className="text-xl font-bold text-brand-text">Sync Complete</h2>
+                        <h2 className="text-xl font-bold text-text-primary">Sync Complete</h2>
                     </div>
-                     <button type="button" onClick={onClose} aria-label="Close sync results" className="text-brand-subtle p-1 rounded-full hover:bg-brand-primary hover:text-brand-text transition-colors">
+                     <button type="button" onClick={onClose} aria-label="Close sync results" className="text-text-secondary p-1 rounded-full hover:bg-bg-primary hover:text-text-primary transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </header>
                 <main className="p-4 overflow-y-auto max-h-[60vh]">
-                    <p className="text-brand-subtle mb-3">The following player data updates have been applied:</p>
+                    <p className="text-text-secondary mb-3">The following player data updates have been applied:</p>
                     <ul className="space-y-2">
                         {results.map((result, index) => (
-                            <li key={index} className="p-2 bg-brand-primary rounded-md text-sm text-brand-text">
+                            <li key={index} className="p-2 bg-bg-primary rounded-md text-sm text-text-primary">
                                 {result}
                             </li>
                         ))}
                     </ul>
                 </main>
-                <footer className="p-4 border-t border-brand-border text-right">
-                    <button onClick={onClose} className="bg-brand-accent text-white font-bold py-2 px-4 rounded-md hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition-colors">
+                <footer className="p-4 border-t border-border-primary text-right">
+                    <button onClick={onClose} className="bg-accent-primary text-white font-bold py-2 px-4 rounded-md hover:bg-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-opacity-75 transition-colors">
                         Close
                     </button>
                 </footer>
@@ -484,9 +484,9 @@ const App: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-brand-primary">
+        <div className="min-h-screen bg-bg-primary font-sans">
             {isSyncing && <Loader message="Syncing latest player data from all sources..." />}
-            <SyncResultsModal results={syncResults} onClose={() => setSyncResults(null)} />
+            <SyncModal results={syncResults} onClose={() => setSyncResults(null)} />
             <Header 
                 currentPick={currentPick}
                 totalTeams={totalTeams}
@@ -500,7 +500,7 @@ const App: React.FC = () => {
                 timeRemaining={timeRemaining}
             />
             <main className="container mx-auto p-4 lg:p-6">
-                <div className="mb-6 bg-brand-secondary border border-brand-border rounded-lg p-4">
+                <div className="mb-6 bg-bg-secondary border border-border-primary rounded-lg p-4">
                     <PositionalAnalysis analysis={aiAnalysis?.positionalAnalysis} />
                 </div>
 
@@ -516,10 +516,10 @@ const App: React.FC = () => {
                     </div>
 
                     <div className="lg:col-span-5">
-                        <h2 className="text-3xl font-bold mb-4 text-brand-text">Available Players</h2>
+                        <h2 className="text-3xl font-bold mb-4 text-text-primary">Available Players</h2>
                         <PlayerSearch query={searchQuery} onQueryChange={setSearchQuery} />
                         <PositionFilter selectedPosition={selectedPosition} onSelectPosition={setSelectedPosition} />
-                        <div className="grid grid-cols-1 md:grid-cols-1 xl:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-1 xl:grid-cols-2 gap-4">
                             {availablePlayers.length > 0 ? availablePlayers.map(player => (
                                 <PlayerCard 
                                     key={player.id} 
@@ -529,8 +529,8 @@ const App: React.FC = () => {
                                     onAnalyzePlayer={handleSelectPlayerForAnalysis}
                                  />
                             )) : (
-                                 <div className="col-span-full text-center py-16 bg-brand-secondary rounded-lg">
-                                    <p className="text-brand-subtle">No players found matching "{searchQuery}" for position: {selectedPosition}</p>
+                                 <div className="col-span-full text-center py-16 bg-bg-secondary rounded-lg">
+                                    <p className="text-text-secondary">No players found matching "{searchQuery}" for position: {selectedPosition}</p>
                                 </div>
                             )}
                         </div>

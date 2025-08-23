@@ -4,37 +4,50 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Fantasy Football AI Draft Picker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
         theme: {
           extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
             colors: {
-              'brand-primary': '#0d1117',
-              'brand-secondary': '#161b22',
-              'brand-accent': '#2f81f7',
-              'brand-text': '#c9d1d9',
-              'brand-subtle': '#8b949e',
-              'brand-border': '#30363d',
+              'bg-primary': '#0A0F19',
+              'bg-secondary': '#161B29',
+              'text-primary': '#E1E7EF',
+              'text-secondary': '#8A94A3',
+              'border-primary': '#2D3748',
+              'accent-primary': '#38BDF8', // Electric Blue
+              'accent-positive': '#34D399', // Green
+              'accent-negative': '#F87171', // Red
+              'accent-warning': '#FBBF24', // Yellow
+              'pos-qb': '#38BDF8', // Blue
+              'pos-rb': '#34D399', // Green
+              'pos-wr': '#A78BFA', // Purple
+              'pos-te': '#F472B6', // Pink
             },
             keyframes: {
               'fade-in': {
-                '0%': { opacity: '0' },
-                '100%': { opacity: '1' },
+                '0%': { opacity: '0', transform: 'translateY(10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
               },
               'glow': {
-                '0%, 100%': { 'box-shadow': '0 0 5px #10B981, 0 0 10px #10B981' },
-                '50%': { 'box-shadow': '0 0 20px #10B981, 0 0 30px #10B981' },
+                '0%, 100%': { 'box-shadow': '0 0 8px var(--glow-color, #34D399), 0 0 12px var(--glow-color, #34D399)' },
+                '50%': { 'box-shadow': '0 0 16px var(--glow-color, #34D399), 0 0 24px var(--glow-color, #34D399)' },
               },
-              'pulse': {
-                '0%, 100%': { transform: 'scale(1)', opacity: '1' },
-                '50%': { transform: 'scale(1.02)', opacity: '0.95' },
+              'subtle-pulse': {
+                '0%, 100%': { transform: 'scale(1)' },
+                '50%': { transform: 'scale(1.02)' },
               }
             },
             animation: {
-              'fade-in': 'fade-in 0.3s ease-in-out',
-              'glow': 'glow 2s ease-in-out infinite',
-              'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'fade-in': 'fade-in 0.4s ease-out forwards',
+              'glow': 'glow 2.5s ease-in-out infinite',
+              'subtle-pulse': 'subtle-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
             },
           }
         }
@@ -51,7 +64,7 @@
 }
 </script>
 </head>
-  <body class="bg-brand-primary text-brand-text">
+  <body class="bg-bg-primary text-text-primary font-sans antialiased">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

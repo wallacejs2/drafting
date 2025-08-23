@@ -12,8 +12,8 @@ const Bar: React.FC<{ value: number; maxValue: number; color: string; label: str
     const width = maxValue > 0 ? (value / maxValue) * 100 : 0;
     return (
         <div className="flex items-center space-x-2">
-            <span className="text-xs font-mono text-brand-subtle w-8">{label}</span>
-            <div className="flex-grow bg-brand-primary rounded-full h-4">
+            <span className="text-xs font-mono text-text-secondary w-8">{label}</span>
+            <div className="flex-grow bg-bg-primary rounded-full h-4">
                 <div
                     className={`h-4 rounded-full ${color} flex items-center justify-end pr-2 transition-all duration-500 ease-out`}
                     style={{ width: `${width}%` }}
@@ -31,10 +31,10 @@ const StatGroup: React.FC<{ title: string; value2023: number; value2024: number 
 
     return (
         <div>
-            <h4 className="text-sm font-semibold text-brand-text mb-2">{title}</h4>
+            <h4 className="text-sm font-semibold text-text-primary mb-2">{title}</h4>
             <div className="space-y-1.5">
-                <Bar value={value2023} maxValue={maxValue} color="bg-brand-subtle" label="2023" />
-                <Bar value={value2024} maxValue={maxValue} color="bg-brand-accent" label="2024" />
+                <Bar value={value2023} maxValue={maxValue} color="bg-text-secondary" label="2023" />
+                <Bar value={value2024} maxValue={maxValue} color="bg-accent-primary" label="2024" />
             </div>
         </div>
     );
@@ -80,12 +80,12 @@ const StatComparisonChart: React.FC<StatComparisonChartProps> = ({ stats2023, st
     }
 
     if (statsToCompare.length === 0) {
-         return <p className="text-center text-brand-subtle text-sm p-4">No detailed stat comparison for this position.</p>;
+         return <p className="text-center text-text-secondary text-sm p-4">No detailed stat comparison for this position.</p>;
     }
 
     return (
-        <div className="bg-brand-secondary border border-brand-border rounded-lg p-6">
-            <h2 className="text-xl font-bold text-brand-text mb-4">Season Comparison Analysis</h2>
+        <div className="bg-bg-secondary border border-border-primary rounded-lg p-6">
+            <h2 className="text-xl font-bold text-text-primary mb-4">Season Comparison Analysis</h2>
             <div className="space-y-6">
                 {statsToCompare.map(({ title, key }) => (
                     <StatGroup

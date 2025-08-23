@@ -24,18 +24,18 @@ const DraftedPlayers: React.FC<DraftBoardProps> = ({ players, totalTeams, curren
                 
                 const isCurrentPick = pickNumber === currentPick;
                 const pickClasses = `
-                    text-center p-1 border-b border-r border-brand-border
-                    ${isCurrentPick ? 'bg-green-500/20 ring-2 ring-green-400 animate-pulse' : ''}
-                    ${round % 2 === 0 ? 'bg-brand-primary/30' : ''}
+                    text-center p-1 border-b border-r border-border-primary
+                    ${isCurrentPick ? 'bg-accent-positive/20 ring-2 ring-accent-positive animate-subtle-pulse' : ''}
+                    ${round % 2 === 0 ? 'bg-bg-primary/30' : ''}
                 `;
 
                 picksInRound.push(
                     <div key={pickNumber} className={pickClasses}>
-                        <div className="text-[10px] text-brand-subtle">{round}.{team.toString().padStart(2, '0')}</div>
+                        <div className="text-[10px] text-text-secondary">{round}.{team.toString().padStart(2, '0')}</div>
                         {player ? (
-                            <div className="text-xs font-semibold text-brand-text truncate" title={player.name}>
+                            <div className="text-xs font-semibold text-text-primary truncate" title={player.name}>
                                 {player.name}
-                                <span className="text-brand-accent block text-[10px]">{player.position}</span>
+                                <span className="text-accent-primary block text-[10px]">{player.position}</span>
                             </div>
                         ) : (
                             <div className="h-7"></div>
@@ -53,12 +53,12 @@ const DraftedPlayers: React.FC<DraftBoardProps> = ({ players, totalTeams, curren
     };
     
     return (
-        <div className="bg-brand-secondary border border-brand-border rounded-lg p-4 flex flex-col flex-grow min-h-0">
-            <h2 className="text-xl font-bold text-brand-text mb-3 flex-shrink-0">Draft Board</h2>
+        <div className="bg-bg-secondary border border-border-primary rounded-lg p-4 flex flex-col flex-grow min-h-0">
+            <h2 className="text-xl font-bold text-text-primary mb-3 flex-shrink-0">Draft Board</h2>
             <div className="flex-grow overflow-y-auto pr-2 -mr-2">
-                 <div className="sticky top-0 bg-brand-secondary z-10 grid" style={{ gridTemplateColumns: `repeat(${totalTeams}, minmax(0, 1fr))` }}>
+                 <div className="sticky top-0 bg-bg-secondary z-10 grid" style={{ gridTemplateColumns: `repeat(${totalTeams}, minmax(0, 1fr))` }}>
                     {Array.from({ length: totalTeams }, (_, i) => i + 1).map(teamNum => (
-                        <div key={teamNum} className="text-center font-bold text-sm text-brand-subtle p-2 border-b-2 border-r border-brand-border">
+                        <div key={teamNum} className="text-center font-bold text-sm text-text-secondary p-2 border-b-2 border-r border-border-primary">
                             T{teamNum}
                         </div>
                     ))}

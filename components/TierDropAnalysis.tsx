@@ -32,16 +32,16 @@ const TierDropAnalysis: React.FC<TierDropAnalysisProps> = ({ availablePlayers })
 
     return (
         <div>
-            <h3 className="text-sm font-bold text-brand-text uppercase mb-2">Upcoming Tier Drops</h3>
+            <h3 className="text-sm font-bold text-text-secondary uppercase tracking-wider mb-2">Upcoming Tier Drops</h3>
             <div className="space-y-2">
                 {analysis.map(({ position, tier, players }) => (
-                    <div key={position} className="bg-brand-primary rounded-lg p-3 border border-yellow-500/50">
+                    <div key={position} className="bg-bg-primary rounded-lg p-3 border border-accent-warning/50">
                         <div className="flex justify-between items-center">
-                            <h4 className="font-bold text-yellow-400">{position} - Tier {tier}</h4>
+                            <h4 className="font-bold text-accent-warning">{position} - Tier {tier}</h4>
                             <span className="text-xs font-semibold bg-yellow-900/70 text-yellow-300 px-2 py-0.5 rounded-full">{players.length} Left</span>
                         </div>
-                        <ul className="text-xs text-brand-subtle mt-1 list-disc list-inside">
-                            {players.map(p => <li key={p.id}><span className="text-brand-text">{p.name}</span></li>)}
+                        <ul className="text-xs text-text-secondary mt-1 list-disc list-inside">
+                            {players.map(p => <li key={p.id}><span className="text-text-primary">{p.name}</span></li>)}
                         </ul>
                     </div>
                 ))}

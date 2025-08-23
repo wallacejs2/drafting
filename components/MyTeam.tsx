@@ -1,9 +1,20 @@
 import React from 'react';
 import type { Player } from '../types';
+import { Position } from '../types';
 
 interface MyTeamProps {
     players: Player[];
     totalTeams: number;
+}
+
+const getPositionClass = (position: Position): string => {
+    switch (position) {
+        case Position.QB: return 'bg-pos-qb';
+        case Position.RB: return 'bg-pos-rb';
+        case Position.WR: return 'bg-pos-wr';
+        case Position.TE: return 'bg-pos-te';
+        default: return 'bg-gray-500';
+    }
 }
 
 const MyTeam: React.FC<MyTeamProps> = ({ players, totalTeams }) => {
@@ -23,13 +34,13 @@ const MyTeam: React.FC<MyTeamProps> = ({ players, totalTeams }) => {
     }
 
     return (
-        <div className="bg-brand-secondary border border-brand-border rounded-lg p-4 animate-fade-in">
-            <h2 className="text-xl font-bold text-brand-text mb-1">My Team</h2>
+        <div className="bg-bg-secondary border border-border-primary rounded-lg p-4 animate-fade-in">
+            <h2 className="text-xl font-bold text-text-primary mb-1">My Team</h2>
             {players.length > 0 && (
-                 <div className="mb-3 text-xs text-brand-subtle flex flex-wrap gap-x-3 gap-y-1 items-center border-b border-brand-border pb-2">
+                 <div className="mb-3 text-xs text-text-secondary flex flex-wrap gap-x-3 gap-y-1 items-center border-b border-border-primary pb-2">
                     <span className="font-bold">Bye Weeks:</span>
                     {sortedByeWeeks.map(([week, count]) => (
-                        <span key={week} className={`font-semibold px-1.5 py-0.5 rounded ${count > 2 ? 'text-red-400 bg-red-900/50' : count > 1 ? 'text-yellow-400 bg-yellow-900/50' : 'text-brand-subtle'}`}>
+                        <span key={week} className={`font-semibold px-1.5 py-0.5 rounded ${count > 2 ? 'text-accent-negative bg-red-900/50' : count > 1 ? 'text-accent-warning bg-yellow-900/50' : 'text-text-secondary'}`}>
                             W{week} ({count})
                         </span>
                     ))}
@@ -38,19 +49,20 @@ const MyTeam: React.FC<MyTeamProps> = ({ players, totalTeams }) => {
             <div className="space-y-2">
                 {sortedPlayers.length > 0 ? (
                     sortedPlayers.map(player => (
-                        <div key={player.id} className="flex items-center justify-between p-2 rounded-md bg-brand-primary">
+                        <div key={player.id} className="flex items-center justify-between p-2 rounded-md bg-bg-primary">
                             <div className="flex items-center gap-3">
-                                <span className="font-bold text-brand-subtle text-sm w-10 text-center">{getRoundAndPick(player.draftPick!)}</span>
+                                <span className="font-bold text-text-secondary text-sm w-10 text-center">{getRoundAndPick(player.draftPick!)}</span>
+                                <div className={`w-1.5 h-8 rounded-full ${getPositionClass(player.position)}`}></div>
                                 <div>
-                                    <p className="font-semibold text-brand-text leading-tight">{player.name}</p>
-                                    <p className="text-xs text-brand-subtle">{player.position} - {player.team} (Bye {player.byeWeek})</p>
+                                    <p className="font-semibold text-text-primary leading-tight">{player.name}</p>
+                                    <p className="text-xs text-text-secondary">{player.position} - {player.team} (Bye {player.byeWeek})</p>
                                 </div>
                             </div>
-                            <span className="font-bold text-green-400 text-lg">{player.fantasyPointsPerGame2024Projected?.toFixed(1)}</span>
+                            <span className="font-bold text-accent-positive text-lg">{player.fantasyPointsPerGame2024Projected?.toFixed(1)}</span>
                         </div>
                     ))
                 ) : (
-                    <p className="text-center text-brand-subtle text-sm py-4">You haven't drafted any players yet.</p>
+                    <p className="text-center text-text-secondary text-sm py-4">You haven't drafted any players yet.</p>
                 )}
             </div>
         </div>
