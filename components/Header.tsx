@@ -8,13 +8,32 @@ interface HeaderProps {
     onAnalyze: () => void;
     canAnalyze: boolean;
     onSyncData: () => void;
+    onResetDraft: () => void;
     isSyncing: boolean;
+    timeRemaining: number;
 }
 
-const Header: React.FC<HeaderProps> = ({ currentPick, totalTeams, teamOnTheClock, isMyTurn, onAnalyze, canAnalyze, onSyncData, isSyncing }) => {
+const Header: React.FC<HeaderProps> = ({ 
+    currentPick, 
+    totalTeams, 
+    teamOnTheClock, 
+    isMyTurn, 
+    onAnalyze, 
+    canAnalyze, 
+    onSyncData, 
+    onResetDraft,
+    isSyncing,
+    timeRemaining
+}) => {
     
     const round = Math.floor((currentPick - 1) / totalTeams) + 1;
     const pickInRound = ((currentPick - 1) % totalTeams) + 1;
+
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
 
     return (
         <header className="bg-brand-secondary border-b border-brand-border shadow-md sticky top-0 z-20">
@@ -26,16 +45,30 @@ const Header: React.FC<HeaderProps> = ({ currentPick, totalTeams, teamOnTheClock
                     <h1 className="text-xl md:text-2xl font-bold text-brand-text">Draft Assistant</h1>
                 </div>
                  <div className="text-center" aria-live="polite" aria-atomic="true">
-                    <p className="text-sm font-bold text-brand-text">
-                        Pick {currentPick} <span className="text-brand-subtle">(R{round}.P{pickInRound})</span>
-                    </p>
-                    {isMyTurn ? (
-                         <p className="text-sm font-semibold text-green-400 animate-pulse">You are on the clock!</p>
-                    ) : (
-                         <p className="text-sm font-semibold text-brand-subtle">Team {teamOnTheClock} is picking</p>
-                    )}
+                    <div className="flex flex-col items-center">
+                        {isMyTurn ? (
+                            <p className="text-lg font-semibold text-green-400 animate-pulse">You are on the clock!</p>
+                        ) : (
+                            <p className="text-sm font-semibold text-brand-subtle">Team {teamOnTheClock} is picking</p>
+                        )}
+                        <p className="text-2xl font-mono font-bold text-brand-text tracking-wider">{formatTime(timeRemaining)}</p>
+                         <p className="text-xs text-brand-subtle">
+                            Pick {currentPick} (R{round}.P{pickInRound})
+                        </p>
+                    </div>
                 </div>
                  <div className="flex items-center gap-2">
+                     <button
+                        onClick={onResetDraft}
+                        disabled={isSyncing}
+                        className="bg-red-600 text-white font-bold py-2 px-4 rounded-md hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75 transition-all duration-200 disabled:bg-gray-500 disabled:cursor-not-allowed flex items-center text-sm"
+                        title="Reset Draft"
+                     >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                        </svg>
+                        <span>Reset</span>
+                     </button>
                      <button
                         onClick={onSyncData}
                         disabled={isSyncing}
@@ -48,7 +81,7 @@ const Header: React.FC<HeaderProps> = ({ currentPick, totalTeams, teamOnTheClock
                             </svg>
                         ) : (
                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
                             </svg>
                         )}
                         <span>{isSyncing ? 'Syncing...' : 'Sync Data'}</span>

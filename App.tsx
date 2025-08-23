@@ -16,6 +16,8 @@ import PlayerAnalyticsWorkstation from './components/PlayerAnalyticsWorkstation'
 import PlayerSearch from './components/PlayerSearch';
 import Loader from './components/Loader';
 
+const DRAFT_TIME_PER_PICK = 90; // 90 seconds per pick
+
 const getRiskScore = (risk: Player['injuryRisk']): number => {
     switch (risk) {
         case 'Low': return 100;
@@ -151,6 +153,9 @@ const initializePlayers = (initialPlayers: Player[]): Player[] => {
 
         return {
             ...p,
+            drafted: false, // Ensure reset
+            draftPick: undefined,
+            teamNumber: undefined,
             fantasyPoints2023,
             fantasyPointsPerGame2023,
             fantasyPoints2024Projected,
@@ -225,6 +230,7 @@ const App: React.FC = () => {
     const [playerOutlook, setPlayerOutlook] = useState<PlayerOutlook | null>(null);
     const [isSyncing, setIsSyncing] = useState(false);
     const [syncResults, setSyncResults] = useState<string[] | null>(null);
+    const [timeRemaining, setTimeRemaining] = useState(DRAFT_TIME_PER_PICK);
 
     const availablePlayers = useMemo(() =>
         players
@@ -295,6 +301,22 @@ const App: React.FC = () => {
         };
     }, [isPlayerWorkstationOpen]);
 
+    // Timer effect
+    useEffect(() => {
+        if (timeRemaining > 0) {
+            const timerId = setInterval(() => {
+                setTimeRemaining(time => time - 1);
+            }, 1000);
+            return () => clearInterval(timerId);
+        }
+    }, [timeRemaining]);
+
+     // Reset timer on new pick
+     useEffect(() => {
+        setTimeRemaining(DRAFT_TIME_PER_PICK);
+    }, [currentPick]);
+
+
     const handleDraftPlayer = useCallback((playerId: number) => {
         const teamDrafting = getTeamForPick(currentPick, totalTeams);
         setPlayers(prevPlayers =>
@@ -312,6 +334,13 @@ const App: React.FC = () => {
     const handleCloseWorkstation = () => {
         setIsPlayerWorkstationOpen(false);
     };
+
+    const handleResetDraft = useCallback(() => {
+        setPlayers(initializePlayers(INITIAL_PLAYERS));
+        setCurrentPick(1);
+        setAiAnalysis(null);
+        setSyncResults(null);
+    }, []);
 
     const handleSyncData = useCallback(() => {
         setIsSyncing(true);
@@ -336,11 +365,12 @@ const App: React.FC = () => {
 
                 const games = update.gamesPlayed2024Projected ?? originalPlayer.gamesPlayed2024Projected ?? 17;
                 const originalPpg = originalPlayer.fantasyPointsPerGame2024Projected ?? 0;
-                const newPpg = update.stats2024Projected ? parseFloat((calculateFantasyPoints(update.stats2024Projected, originalPlayer.position, games) / games).toFixed(2)) : originalPpg;
-
-                if (newPpg.toFixed(1) !== originalPpg.toFixed(1)) {
-                    const arrow = originalPpg > newPpg ? '↓' : '↑';
-                    changes.push(`${originalPlayer.name}: AI Proj ${arrow} ${originalPpg.toFixed(1)} → ${newPpg.toFixed(1)} PPG`);
+                if (update.stats2024Projected) {
+                    const newPpg = parseFloat((calculateFantasyPoints(update.stats2024Projected, originalPlayer.position, games) / games).toFixed(2));
+                    if (newPpg.toFixed(1) !== originalPpg.toFixed(1)) {
+                        const arrow = originalPpg > newPpg ? '↓' : '↑';
+                        changes.push(`${originalPlayer.name}: AI Proj ${arrow} ${originalPpg.toFixed(1)} → ${newPpg.toFixed(1)} PPG`);
+                    }
                 }
 
                 if (update.espnPpgProjected && update.espnPpgProjected.toFixed(1) !== (originalPlayer.espnPpgProjected ?? 0).toFixed(1)) {
@@ -357,8 +387,8 @@ const App: React.FC = () => {
             const updatedDataMap = new Map(UPDATED_PLAYER_DATA_SIMULATION.map(p => [p.id, p]));
     
             const mergedPlayers = Array.from(initialPlayersMap.values()).map(player => {
-                if (updatedDataMap.has(player.id)) {
-                    const updates = updatedDataMap.get(player.id);
+                const updates = updatedDataMap.get(player.id);
+                if (updates) {
                     return { ...player, ...updates };
                 }
                 return player;
@@ -465,7 +495,9 @@ const App: React.FC = () => {
                 onAnalyze={handleAnalyzeTeam}
                 canAnalyze={myTeamPlayers.length > 0}
                 onSyncData={handleSyncData}
+                onResetDraft={handleResetDraft}
                 isSyncing={isSyncing}
+                timeRemaining={timeRemaining}
             />
             <main className="container mx-auto p-4 lg:p-6">
                 <div className="mb-6 bg-brand-secondary border border-brand-border rounded-lg p-4">
@@ -474,8 +506,12 @@ const App: React.FC = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                      <div className="lg:col-span-3">
-                        <div className="lg:sticky lg:top-6 flex flex-col lg:h-[calc(100vh-6rem)]">
-                            <DraftedPlayers players={draftedPlayers} />
+                        <div className="lg:sticky lg:top-24 flex flex-col lg:h-[calc(100vh-8rem)]">
+                            <DraftedPlayers 
+                                players={draftedPlayers} 
+                                totalTeams={totalTeams}
+                                currentPick={currentPick}
+                             />
                         </div>
                     </div>
 
@@ -483,7 +519,7 @@ const App: React.FC = () => {
                         <h2 className="text-3xl font-bold mb-4 text-brand-text">Available Players</h2>
                         <PlayerSearch query={searchQuery} onQueryChange={setSearchQuery} />
                         <PositionFilter selectedPosition={selectedPosition} onSelectPosition={setSelectedPosition} />
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-1 xl:grid-cols-2 gap-3">
                             {availablePlayers.length > 0 ? availablePlayers.map(player => (
                                 <PlayerCard 
                                     key={player.id} 
@@ -501,7 +537,7 @@ const App: React.FC = () => {
                     </div>
                     
                     <div className="lg:col-span-4">
-                        <div className="lg:sticky lg:top-6 space-y-6">
+                        <div className="lg:sticky lg:top-24 space-y-6">
                              <DraftAssistant
                                 player={recommendedPlayer}
                                 analysis={aiAnalysis}
