@@ -32,6 +32,42 @@ const OutlookCard: React.FC<{ title: string; content: string; icon: React.ReactN
     </div>
 );
 
+const KeyFactors: React.FC<{ modifiers: Player['projectionModifiers'] }> = ({ modifiers }) => {
+    if (!modifiers || (modifiers.catalysts.length === 0 && modifiers.concerns.length === 0)) {
+        return null;
+    }
+
+    return (
+        <div className="bg-brand-primary/50 border border-brand-border/50 rounded-lg p-4">
+            <h2 className="text-xl font-bold text-brand-text mb-3">Key Factors & Modifiers</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <h3 className="text-lg font-bold text-green-400 flex items-center gap-2 mb-2">
+                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clipRule="evenodd" />
+                        </svg>
+                        Catalysts
+                    </h3>
+                    <ul className="list-disc list-inside space-y-1 text-sm text-brand-subtle">
+                         {modifiers.catalysts.length > 0 ? modifiers.catalysts.map((c, i) => <li key={i}>{c}</li>) : <li>None</li>}
+                    </ul>
+                </div>
+                 <div>
+                    <h3 className="text-lg font-bold text-red-400 flex items-center gap-2 mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1.707-11.707a1 1 0 00-1.414 0L9 7.586V11a1 1 0 102 0V7.586l1.293 1.293a1 1 0 001.414-1.414l-3-3z" clipRule="evenodd" />
+                        </svg>
+                        Concerns
+                    </h3>
+                    <ul className="list-disc list-inside space-y-1 text-sm text-brand-subtle">
+                        {modifiers.concerns.length > 0 ? modifiers.concerns.map((c, i) => <li key={i}>{c}</li>) : <li>None</li>}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const PlayerAnalyticsWorkstation: React.FC<PlayerAnalyticsWorkstationProps> = ({ player, outlook, onClose }) => {
     const [isVisible, setIsVisible] = useState(false);
 
@@ -111,6 +147,8 @@ const PlayerAnalyticsWorkstation: React.FC<PlayerAnalyticsWorkstationProps> = ({
                                     <p className="text-brand-subtle text-sm font-medium">{outlook.verdict}</p>
                                 </div>
                             </div>
+
+                            <KeyFactors modifiers={player.projectionModifiers} />
                             
                             <div className="bg-brand-primary/50 border border-brand-border/50 rounded-lg p-4">
                                 <h3 className="text-lg font-bold text-brand-text mb-2 flex items-center gap-2">

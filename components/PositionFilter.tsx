@@ -1,13 +1,14 @@
 
+
 import React from 'react';
 import { Position } from '../types';
 
 interface PositionFilterProps {
-    selectedPosition: Position | 'ALL';
-    onSelectPosition: (position: Position | 'ALL') => void;
+    selectedPosition: Position | 'ALL' | 'FLEX';
+    onSelectPosition: (position: Position | 'ALL' | 'FLEX') => void;
 }
 
-const POSITIONS_WITH_ALL: (Position | 'ALL')[] = ['ALL', Position.QB, Position.RB, Position.WR, Position.TE, Position.K, Position.DST];
+const POSITIONS_WITH_ALL: (Position | 'ALL' | 'FLEX')[] = ['ALL', 'FLEX', Position.QB, Position.RB, Position.WR, Position.TE, Position.K, Position.DST];
 
 const PositionFilter: React.FC<PositionFilterProps> = ({ selectedPosition, onSelectPosition }) => {
     return (

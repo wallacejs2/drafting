@@ -54,6 +54,12 @@ export interface Player {
     fantasyPointsPerGame2023?: number;
     fantasyPoints2024Projected?: number;
     fantasyPointsPerGame2024Projected?: number;
+    espnPpgProjected?: number;
+    sleeperPpgProjected?: number;
+    projectionModifiers?: {
+        catalysts: string[];
+        concerns: string[];
+    };
     drafted: boolean;
     draftPick?: number;
     teamNumber?: number;

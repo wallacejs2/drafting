@@ -26,15 +26,10 @@ const GradeBadge: React.FC<{ grade?: string }> = ({ grade }) => {
     );
 };
 
-const InfoItem: React.FC<{ label: string; value: string | number; color?: string }> = ({ label, value, color = 'text-brand-text' }) => (
-     <div className="text-center">
-        <p className="text-xs text-brand-subtle">{label}</p>
-        <p className={`text-base font-bold ${color}`}>{value}</p>
-    </div>
-);
-
 const PlayerCard: React.FC<PlayerCardProps> = ({ player, onDraft, onAnalyzePlayer, isRecommended = false }) => {
     const recommendedClass = isRecommended ? 'animate-glow' : '';
+    const projectionModifiers = player.projectionModifiers;
+    const hasModifiers = projectionModifiers && (projectionModifiers.catalysts.length > 0 || projectionModifiers.concerns.length > 0);
 
     return (
         <div className={`bg-brand-secondary border border-brand-border rounded-lg shadow-lg p-3 flex flex-col justify-between transition-all duration-300 hover:border-brand-accent ${recommendedClass}`}>
@@ -62,13 +57,61 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ player, onDraft, onAnalyzePlaye
                     </div>
                 </div>
                 
-                <div className="grid grid-cols-3 gap-y-3 gap-x-1 text-center my-3 p-2 bg-brand-primary/50 rounded-md">
-                   <InfoItem label="PROJ. PPG" value={player.fantasyPointsPerGame2024Projected?.toFixed(1) ?? 'N/A'} color="text-green-400" />
-                   <InfoItem label="ADP" value={player.adp ?? 'N/A'} />
-                   <InfoItem label="BYE" value={player.byeWeek} />
+                 <div className="my-3 p-2 bg-brand-primary/50 rounded-md">
+                    <p className="text-xs text-brand-subtle text-center mb-1.5 font-bold uppercase">Projections (PPG)</p>
+                    <div className="grid grid-cols-3 gap-1 text-center">
+                        <div className="relative group">
+                            <p className="text-xs text-brand-subtle">AI</p>
+                            <div className="flex items-center justify-center gap-1">
+                                <p className="text-base font-bold text-green-400">{player.fantasyPointsPerGame2024Projected?.toFixed(1) ?? 'N/A'}</p>
+                                {hasModifiers && (
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-brand-subtle" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                    </svg>
+                                )}
+                            </div>
+                            {hasModifiers && (
+                                <div className="absolute bottom-full mb-2 w-48 bg-brand-primary border border-brand-border text-left p-2 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
+                                    {projectionModifiers.catalysts.length > 0 && (
+                                        <div>
+                                            <h4 className="text-xs font-bold text-green-400">Catalysts:</h4>
+                                            <ul className="list-disc list-inside text-xs text-brand-subtle">
+                                                {projectionModifiers.catalysts.map((c, i) => <li key={i}>{c}</li>)}
+                                            </ul>
+                                        </div>
+                                    )}
+                                    {projectionModifiers.concerns.length > 0 && (
+                                        <div className="mt-1">
+                                            <h4 className="text-xs font-bold text-red-400">Concerns:</h4>
+                                            <ul className="list-disc list-inside text-xs text-brand-subtle">
+                                                {projectionModifiers.concerns.map((c, i) => <li key={i}>{c}</li>)}
+                                            </ul>
+                                        </div>
+                                    )}
+                                     <div className="absolute left-1/2 -translate-x-1/2 bottom-[-5px] w-2.5 h-2.5 bg-brand-primary border-r border-b border-brand-border rotate-45"></div>
+                                </div>
+                            )}
+                        </div>
+                        <div>
+                            <p className="text-xs text-brand-subtle">ESPN</p>
+                            <p className="text-base font-bold text-brand-text">{player.espnPpgProjected?.toFixed(1) ?? 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-brand-subtle">Sleeper</p>
+                            <p className="text-base font-bold text-brand-text">{player.sleeperPpgProjected?.toFixed(1) ?? 'N/A'}</p>
+                        </div>
+                    </div>
                 </div>
                 
                 <div className="grid grid-cols-3 gap-y-3 gap-x-1 text-center my-3 text-sm">
+                    <div>
+                        <p className="text-xs text-brand-subtle">ADP</p>
+                        <p className="font-bold">{player.adp ?? 'N/A'}</p>
+                    </div>
+                    <div>
+                        <p className="text-xs text-brand-subtle">BYE</p>
+                        <p className="font-bold">{player.byeWeek}</p>
+                    </div>
                      <div>
                         <p className="text-xs text-brand-subtle">SOS</p>
                         <p className={`font-bold ${

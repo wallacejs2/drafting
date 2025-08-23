@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Player, AIAnalysis, AnalyticsData, PositionalAdvantage, PlayerOutlook } from './types';
 import { INITIAL_PLAYERS, UPDATED_PLAYER_DATA_SIMULATION, calculateFantasyPoints } from './constants';
@@ -62,18 +63,59 @@ const scoreToGrade = (score: number): string => {
     return 'F';
 };
 
+// --- Sync Results Modal Component ---
+const SyncResultsModal: React.FC<{ results: string[] | null; onClose: () => void }> = ({ results, onClose }) => {
+    if (!results) return null;
+
+    return (
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose} aria-hidden="true"></div>
+            <div className="relative bg-brand-secondary border border-brand-border rounded-lg shadow-2xl w-full max-w-md m-auto flex flex-col animate-fade-in">
+                <header className="flex items-center justify-between p-4 border-b border-brand-border">
+                    <div className="flex items-center gap-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <h2 className="text-xl font-bold text-brand-text">Sync Complete</h2>
+                    </div>
+                     <button type="button" onClick={onClose} aria-label="Close sync results" className="text-brand-subtle p-1 rounded-full hover:bg-brand-primary hover:text-brand-text transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </header>
+                <main className="p-4 overflow-y-auto max-h-[60vh]">
+                    <p className="text-brand-subtle mb-3">The following player data updates have been applied:</p>
+                    <ul className="space-y-2">
+                        {results.map((result, index) => (
+                            <li key={index} className="p-2 bg-brand-primary rounded-md text-sm text-brand-text">
+                                {result}
+                            </li>
+                        ))}
+                    </ul>
+                </main>
+                <footer className="p-4 border-t border-brand-border text-right">
+                    <button onClick={onClose} className="bg-brand-accent text-white font-bold py-2 px-4 rounded-md hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition-colors">
+                        Close
+                    </button>
+                </footer>
+            </div>
+        </div>
+    );
+};
+
+
 const initializePlayers = (initialPlayers: Player[]): Player[] => {
     let playersWithStats = initialPlayers.map(p => {
         const fantasyPoints2023 = calculateFantasyPoints(p.stats2023, p.position, p.gamesPlayed2023);
         const fantasyPointsPerGame2023 = p.gamesPlayed2023 > 0 ? parseFloat((fantasyPoints2023 / p.gamesPlayed2023).toFixed(2)) : 0;
 
-        let fantasyPoints2024Projected: number;
+        let baseFantasyPoints2024Projected: number;
         let gamesPlayed2024Projected: number;
-        let fantasyPointsPerGame2024Projected: number;
 
         if (p.stats2024Projected && p.gamesPlayed2024Projected != null) {
             gamesPlayed2024Projected = p.gamesPlayed2024Projected;
-            fantasyPoints2024Projected = calculateFantasyPoints(p.stats2024Projected, p.position, gamesPlayed2024Projected);
+            baseFantasyPoints2024Projected = calculateFantasyPoints(p.stats2024Projected, p.position, gamesPlayed2024Projected);
         } else {
             let fallbackProjectedGames = 17;
             if (p.injuryRisk === 'High') fallbackProjectedGames = 14;
@@ -97,10 +139,15 @@ const initializePlayers = (initialPlayers: Player[]): Player[] => {
                 gamesPlayedFactor = 17;
             }
 
-            fantasyPoints2024Projected = (basePoints / gamesPlayedFactor) * gamesPlayed2024Projected * 0.95;
+            baseFantasyPoints2024Projected = (basePoints / gamesPlayedFactor) * gamesPlayed2024Projected * 0.95;
         }
 
-        fantasyPointsPerGame2024Projected = gamesPlayed2024Projected > 0 ? parseFloat((fantasyPoints2024Projected / gamesPlayed2024Projected).toFixed(2)) : 0;
+        const catalysts = p.projectionModifiers?.catalysts?.length ?? 0;
+        const concerns = p.projectionModifiers?.concerns?.length ?? 0;
+        const modifierFactor = 1 + (catalysts * 0.02) - (concerns * 0.025);
+        const fantasyPoints2024Projected = baseFantasyPoints2024Projected * modifierFactor;
+        
+        const fantasyPointsPerGame2024Projected = gamesPlayed2024Projected > 0 ? parseFloat((fantasyPoints2024Projected / gamesPlayed2024Projected).toFixed(2)) : 0;
 
         return {
             ...p,
@@ -169,7 +216,7 @@ const App: React.FC = () => {
     const [totalTeams, setTotalTeams] = useState<number>(12);
     const [currentPick, setCurrentPick] = useState<number>(1);
     const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
-    const [selectedPosition, setSelectedPosition] = useState<Position | 'ALL'>('ALL');
+    const [selectedPosition, setSelectedPosition] = useState<Position | 'ALL' | 'FLEX'>('ALL');
     const [searchQuery, setSearchQuery] = useState('');
     const [viewMode, setViewMode] = useState<'draft' | 'analytics'>('draft');
     const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
@@ -177,11 +224,18 @@ const App: React.FC = () => {
     const [selectedPlayerForAnalysis, setSelectedPlayerForAnalysis] = useState<Player | null>(null);
     const [playerOutlook, setPlayerOutlook] = useState<PlayerOutlook | null>(null);
     const [isSyncing, setIsSyncing] = useState(false);
+    const [syncResults, setSyncResults] = useState<string[] | null>(null);
 
     const availablePlayers = useMemo(() =>
         players
             .filter(p => !p.drafted)
-            .filter(p => selectedPosition === 'ALL' || p.position === selectedPosition)
+            .filter(p => {
+                if (selectedPosition === 'ALL') return true;
+                if (selectedPosition === 'FLEX') {
+                    return p.position === Position.RB || p.position === Position.WR || p.position === Position.TE;
+                }
+                return p.position === selectedPosition;
+            })
             .filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
             .sort((a, b) => (a.adp ?? 999) - (b.adp ?? 999)),
     [players, selectedPosition, searchQuery]);
@@ -263,13 +317,46 @@ const App: React.FC = () => {
         setIsSyncing(true);
         // Simulate network delay for fetching data
         setTimeout(() => {
-            const currentPlayers = INITIAL_PLAYERS; // Start from a clean slate to merge
+            const changes: string[] = [];
+            const currentPlayersMap = new Map(players.map(p => [p.id, p]));
+            
+            UPDATED_PLAYER_DATA_SIMULATION.forEach(update => {
+                const originalPlayer = currentPlayersMap.get(update.id);
+                if (!originalPlayer) return;
     
-            const updatedDataMap = new Map(
-                UPDATED_PLAYER_DATA_SIMULATION.map(p => [p.id, p])
-            );
+                if (update.adp && update.adp !== originalPlayer.adp) {
+                    changes.push(`${originalPlayer.name}: ADP ${originalPlayer.adp ?? 'N/A'} → ${update.adp}`);
+                }
+                if (update.espnRank && update.espnRank !== originalPlayer.espnRank) {
+                    changes.push(`${originalPlayer.name}: ESPN Rank ${originalPlayer.espnRank ?? 'N/A'} → ${update.espnRank}`);
+                }
+                if (update.notes && update.notes !== originalPlayer.notes) {
+                    changes.push(`${originalPlayer.name}: Note updated`);
+                }
+
+                const games = update.gamesPlayed2024Projected ?? originalPlayer.gamesPlayed2024Projected ?? 17;
+                const originalPpg = originalPlayer.fantasyPointsPerGame2024Projected ?? 0;
+                const newPpg = update.stats2024Projected ? parseFloat((calculateFantasyPoints(update.stats2024Projected, originalPlayer.position, games) / games).toFixed(2)) : originalPpg;
+
+                if (newPpg.toFixed(1) !== originalPpg.toFixed(1)) {
+                    const arrow = originalPpg > newPpg ? '↓' : '↑';
+                    changes.push(`${originalPlayer.name}: AI Proj ${arrow} ${originalPpg.toFixed(1)} → ${newPpg.toFixed(1)} PPG`);
+                }
+
+                if (update.espnPpgProjected && update.espnPpgProjected.toFixed(1) !== (originalPlayer.espnPpgProjected ?? 0).toFixed(1)) {
+                    const arrow = (originalPlayer.espnPpgProjected ?? 0) > update.espnPpgProjected ? '↓' : '↑';
+                    changes.push(`${originalPlayer.name}: ESPN Proj ${arrow} ${(originalPlayer.espnPpgProjected ?? 0).toFixed(1)} → ${update.espnPpgProjected.toFixed(1)} PPG`);
+                }
+                if (update.sleeperPpgProjected && update.sleeperPpgProjected.toFixed(1) !== (originalPlayer.sleeperPpgProjected ?? 0).toFixed(1)) {
+                    const arrow = (originalPlayer.sleeperPpgProjected ?? 0) > update.sleeperPpgProjected ? '↓' : '↑';
+                    changes.push(`${originalPlayer.name}: Sleeper Proj ${arrow} ${(originalPlayer.sleeperPpgProjected ?? 0).toFixed(1)} → ${update.sleeperPpgProjected.toFixed(1)} PPG`);
+                }
+            });
+            
+            const initialPlayersMap = new Map(INITIAL_PLAYERS.map(p => [p.id, p]));
+            const updatedDataMap = new Map(UPDATED_PLAYER_DATA_SIMULATION.map(p => [p.id, p]));
     
-            const mergedPlayers = currentPlayers.map(player => {
+            const mergedPlayers = Array.from(initialPlayersMap.values()).map(player => {
                 if (updatedDataMap.has(player.id)) {
                     const updates = updatedDataMap.get(player.id);
                     return { ...player, ...updates };
@@ -279,11 +366,17 @@ const App: React.FC = () => {
     
             const reinitializedPlayers = initializePlayers(mergedPlayers);
             setPlayers(reinitializedPlayers);
+            
+            if (changes.length > 0) {
+                setSyncResults(changes);
+            } else {
+                setSyncResults(["No significant player data changes found."]);
+            }
+
             setIsSyncing(false);
-            // Reset draft progress after a full sync
             setCurrentPick(1); 
         }, 2500);
-    }, []);
+    }, [players]);
 
     const handleAnalyzeTeam = useCallback(() => {
         const allDraftedPlayers = players.filter(p => p.drafted);
@@ -363,6 +456,7 @@ const App: React.FC = () => {
     return (
         <div className="min-h-screen bg-brand-primary">
             {isSyncing && <Loader message="Syncing latest player data from all sources..." />}
+            <SyncResultsModal results={syncResults} onClose={() => setSyncResults(null)} />
             <Header 
                 currentPick={currentPick}
                 totalTeams={totalTeams}
